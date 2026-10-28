@@ -4,6 +4,11 @@
     validated `attachment` list through. -#}
 {%- set apprise_caps = {"formats": ["markdown", "html", "text"], "images": 0, "links": 0, "title": true} -%}
 {%- set apprise_fields = {"attachment": "@msg.attachment", "body": "@msg.body", "format": "@msg.format", "title": "@msg.title", "type": "@msg.type"} -%}
+{#- Enrollment parameters live on the channel that reads them
+    (unitysvc/unitysvc#2726). Only the plus channel (`gateway-plus` or
+    `apprise-plus`) reads `{{ params.* }}`, so it carries the param file's
+    schema and test values; the free channel declares none. -#}
+{%- set plus_params = {"schema": user_parameters_schema, "testing_defaults": ops_testing_parameters} %}
 {
   "capabilities": [
     "deliver-message"
@@ -67,6 +72,7 @@
       {%- endif %}
       "sort_order": 3,
       "base_url": {{ gateway_url_plus | tojson }},
+      "params": {{ plus_params | tojson }},
       "request_transformer": {
         {%- if msg_capabilities is defined %}
         "msg_transformer": { "capabilities": {{ msg_capabilities | tojson }}{% if gateway_field_mapping is defined %}, "field_mapping": {{ (gateway_field_mapping_plus | default(gateway_field_mapping)) | tojson }}{% if gateway_output_format is defined %}, "output_format": {{ gateway_output_format | tojson }}{% endif %}{% endif %} },
@@ -93,6 +99,7 @@
       "access_method": "http",
       "sort_order": 4,
       "base_url": "${ customer_secrets._APPRISE_BASE ?? https://apprise.unitysvc.dev }/notify",
+      "params": {{ plus_params | tojson }},
       "request_transformer": {
         "msg_transformer": {
           "capabilities": {{ apprise_caps | tojson }},

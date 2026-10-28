@@ -15,10 +15,10 @@ check fails when:
    present;
 3. an ``Authorization`` header is a literal instead of a secret reference;
 4. a ``${ customer_secrets.X }`` name is missing from ``seller.secrets.txt``;
-5. the listing requires enrollment parameters but no channel is ``enrollable``.
-   The platform then attributes the enrollment to the first channel — the free
-   one — and shows the paid ``-plus`` channel as the one needing only secrets;
-6. a required enrollment parameter is used by no ``enrollable`` channel;
+5. a channel declares required enrollment parameters (``params.schema``,
+   unitysvc/unitysvc#2726) but is not ``enrollable``, so the enrollment lands
+   on a channel that never reads them;
+6. a channel's required enrollment parameter is not read by that channel;
 7. an ``enrollable`` channel reads a customer secret by its fixed name (one the
    customer must supply, not ``_``-prefixed or defaulted): it then reaches the
    free channel's destination instead of the enrollment's own.
@@ -72,12 +72,15 @@ def fixed_secrets(cfg: dict) -> list[str]:
     return sorted(set(names))
 
 
-def required_params(service_dir: Path) -> list[str]:
-    required: set[str] = set()
-    for listing_path in service_dir.glob("listing*.json"):
-        schema = json.loads(listing_path.read_text()).get("user_parameters_schema") or {}
-        required.update(schema.get("required") or [])
-    return sorted(required)
+def required_params(cfg: dict) -> list[str]:
+    """Required enrollment parameters the channel declares in ``params.schema``."""
+    schema = (cfg.get("params") or {}).get("schema") or {}
+    return sorted(schema.get("required") or [])
+
+
+def channel_body(cfg: dict) -> dict:
+    """The channel config the gateway renders; its ``params`` declaration reads nothing."""
+    return {k: v for k, v in cfg.items() if k != "params"}
 
 
 def channel_type(cfg: dict) -> str:
@@ -109,22 +112,24 @@ def main() -> int:
             offering = json.loads(offering_path.read_text())
             if offering.get("status") == "deprecated":
                 continue  # no longer offered, so never shown as Directly Usable
-            channels = {
+            active = {
                 ch: cfg
                 for ch, cfg in offering.get("upstream_access_config", {}).items()
                 if cfg.get("is_active") is not False
             }
+            channels = {ch: channel_body(cfg) for ch, cfg in active.items()}
             enrollable = {ch: cfg for ch, cfg in channels.items() if channel_type(cfg) == "enrollable"}
-            required = required_params(offering_path.parent)
-            if required and not enrollable:
-                errors.append(
-                    f"{svc}: requires enrollment parameters {required} but no channel uses them, "
-                    "so the enrollment lands on the free channel"
-                )
-            if enrollable:
-                used = {p for cfg in enrollable.values() for p in PARAM.findall(json.dumps(cfg))}
+            for ch, cfg in active.items():
+                required = required_params(cfg)
+                if required and ch not in enrollable:
+                    errors.append(
+                        f"{svc}@{ch}: declares required enrollment parameters {required} "
+                        "but reads none of them, so the enrollment lands on a channel that ignores them"
+                    )
+                    continue
+                used = set(PARAM.findall(json.dumps(channels[ch])))
                 for param in sorted(set(required) - used):
-                    errors.append(f"{svc}: required parameter {param} is used by no enrollable channel")
+                    errors.append(f"{svc}@{ch}: required parameter {param} is not read by the channel")
             for ch, cfg in enrollable.items():
                 for name in fixed_secrets(cfg):
                     errors.append(
