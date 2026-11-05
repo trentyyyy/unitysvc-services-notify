@@ -4,6 +4,7 @@
     "channel_name": "misskey-relay",
     "code_example_preset": "notify_relay_code_example_py_misskey",
     "connectivity_preset": "notify_relay_connectivity_misskey",
+    "default_visibility": "private",
     "description": "`misskey-relay` accepts an HTTP POST with a native `misskey` payload that includes your credential field, and the gateway forwards it to your upstream Misskey instance, so you run no messaging infrastructure of your own.\n\nTwo channels are available: the free `byok` channel relays your own authenticated payload; the `plus` channel is the metered tier.",
     "display_name": "Misskey Relay",
     "logo": "https://cdn.simpleicons.org/misskey/A1CA03",

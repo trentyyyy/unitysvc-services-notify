@@ -7,6 +7,7 @@
     "channel_name": "africastalking-sms-relay",
     "code_example_preset": "notify_relay_code_example_py_africastalking_sms",
     "connectivity_preset": "notify_relay_connectivity_africastalking_sms",
+    "default_visibility": "private",
     "description": "`africastalking-sms-relay` accepts an HTTP POST with a native `africastalking_sms` payload. The gateway composes the upstream Africa's Talking URL from your stored secrets, injects your credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters.",
     "display_name": "Africa's Talking SMS Relay",
     "logo": "https://api.iconify.design/boxicons:globe-africa-filled.svg?color=%232C963F",

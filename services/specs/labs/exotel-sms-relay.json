@@ -7,6 +7,7 @@
     "channel_name": "exotel-sms-relay",
     "code_example_preset": "notify_relay_code_example_py_exotel_sms",
     "connectivity_preset": "notify_relay_connectivity_exotel_sms",
+    "default_visibility": "private",
     "description": "`exotel-sms-relay` accepts an HTTP POST with a native `exotel_sms` payload. The gateway composes the upstream Exotel URL from your stored secrets, injects your credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters.",
     "display_name": "Exotel SMS Relay",
     "logo": "https://www.moengage.com/wp-content/uploads/exotel-icon.png",

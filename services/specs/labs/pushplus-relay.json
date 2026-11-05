@@ -4,6 +4,7 @@
     "channel_name": "pushplus-relay",
     "code_example_preset": "notify_relay_code_example_py_pushplus",
     "connectivity_preset": "notify_relay_connectivity_pushplus",
+    "default_visibility": "private",
     "description": "`pushplus-relay` accepts an HTTP POST with a native `pushplus` payload that includes your credential field; the gateway forwards it to the upstream, so you run no messaging infrastructure of your own.\n\nTwo channels are available: the free `byok` channel relays your own authenticated payload; the `plus` channel is the metered tier.",
     "display_name": "PushPlus Relay",
     "logo": "https://www.pushplus.plus/favicon.ico",

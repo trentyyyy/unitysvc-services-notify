@@ -4,6 +4,7 @@
     "channel_name": "discord-relay",
     "code_example_preset": "notify_relay_code_example_py_discord",
     "connectivity_preset": "notify_relay_connectivity_discord",
+    "default_visibility": "private",
     "description": "`discord-relay` accepts an HTTP POST with a native Discord webhook payload (e.g. {\"content\": \"...\"} or {\"embeds\": [...]}). The gateway forwards the request to the webhook URL in your stored secret, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored webhook; the `plus` channel binds extra per-enrollment webhooks via enrollment parameters.",
     "display_name": "Discord Relay",
     "logo": "https://cdn.simpleicons.org/discord/5865F2",

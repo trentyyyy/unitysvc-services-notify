@@ -7,6 +7,7 @@
     "channel_name": "fcm-relay",
     "code_example_preset": "notify_relay_code_example_py_fcm",
     "connectivity_preset": "notify_relay_connectivity_fcm",
+    "default_visibility": "private",
     "description": "`fcm-relay` accepts an HTTP POST with a native `fcm` payload. The gateway composes the upstream FCM URL from your stored secrets, injects your credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters (the `api_key_secret` parameter names the customer secret holding this enrollment's API key).",
     "display_name": "FCM (legacy) Relay",
     "logo": "https://cdn.simpleicons.org/firebase/DD2C00",

@@ -4,6 +4,7 @@
     "channel_name": "nextcloud-relay",
     "code_example_preset": "notify_relay_code_example_py_nextcloud",
     "connectivity_preset": "notify_relay_connectivity_nextcloud",
+    "default_visibility": "private",
     "description": "`nextcloud-relay` accepts an HTTP POST with a native `nextcloud` payload. The gateway composes the upstream Nextcloud URL from your stored secrets and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds extra per-enrollment destinations via enrollment parameters.",
     "display_name": "Nextcloud Relay",
     "logo": "https://cdn.simpleicons.org/nextcloud/0082C9",

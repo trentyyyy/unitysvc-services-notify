@@ -4,6 +4,7 @@
     "channel_name": "prowl-relay",
     "code_example_preset": "notify_relay_code_example_py_prowl",
     "connectivity_preset": "notify_relay_connectivity_prowl",
+    "default_visibility": "private",
     "description": "`prowl-relay` accepts an HTTP POST with a native `prowl` payload that includes your Prowl API key (the `apikey` form field). The gateway forwards it to the upstream Prowl API, so you run no messaging infrastructure of your own.\n\nTwo channels are available: the free `byok` channel relays your own authenticated payload; the `plus` channel is the metered tier.",
     "display_name": "Prowl Relay",
     "logo": "https://is1-ssl.mzstatic.com/image/thumb/Purple49/v4/1c/3d/a6/1c3da6cb-0182-e061-68f4-68573731c4d6/mzl.xbttojza.png/512x512bb.png",

@@ -7,6 +7,7 @@
     "channel_name": "elks-sms-relay",
     "code_example_preset": "notify_relay_code_example_py_elks_sms",
     "connectivity_preset": "notify_relay_connectivity_elks_sms",
+    "default_visibility": "private",
     "description": "`elks-sms-relay` accepts an HTTP POST with a native `elks_sms` payload. The gateway composes the upstream 46elks URL from your stored secrets, injects your credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters.",
     "display_name": "46elks SMS Relay",
     "logo": "https://pipedream.com/s.v0/app_WnhPr8/logo/orig",

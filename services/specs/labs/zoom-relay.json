@@ -7,6 +7,7 @@
     "channel_name": "zoom-relay",
     "code_example_preset": "notify_relay_code_example_py_zoom",
     "connectivity_preset": "notify_relay_connectivity_zoom",
+    "default_visibility": "private",
     "description": "`zoom-relay` accepts an HTTP POST with a native `zoom` payload. The gateway composes the upstream Zoom URL from your stored secrets, injects your `Authorization` credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters (the `api_key_secret` parameter names the customer secret holding it).",
     "display_name": "Zoom Team Chat Relay",
     "logo": "https://cdn.simpleicons.org/zoom/FFFFFF",

@@ -7,6 +7,7 @@
     "channel_name": "zulip-relay",
     "code_example_preset": "notify_relay_code_example_py_zulip",
     "connectivity_preset": "notify_relay_connectivity_zulip",
+    "default_visibility": "private",
     "description": "`zulip-relay` accepts an HTTP POST with a native `zulip` payload. The gateway composes the upstream Zulip URL from your stored secrets, injects your `Authorization: Basic` credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds extra per-enrollment destinations via enrollment parameters (the `api_key_secret` parameter names the customer secret holding your base64 user:password for HTTP basic auth).",
     "display_name": "Zulip Relay",
     "logo": "https://cdn.simpleicons.org/zulip/6492FE",

@@ -4,6 +4,7 @@
     "channel_name": "pushdeer-relay",
     "code_example_preset": "notify_relay_code_example_py_pushdeer",
     "connectivity_preset": "notify_relay_connectivity_pushdeer",
+    "default_visibility": "private",
     "description": "`pushdeer-relay` accepts an HTTP POST with a native `pushdeer` payload. The gateway composes the upstream PushDeer URL from your stored secrets and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds extra per-enrollment destinations via enrollment parameters (the `pushkey_secret` parameter names the customer secret holding this enrollment's pushdeer pushkey).",
     "display_name": "PushDeer Relay",
     "logo": "https://www.pushdeer.com/favicon.svg",
