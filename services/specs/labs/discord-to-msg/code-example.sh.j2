@@ -1,0 +1,33 @@
+#!/bin/bash
+# Simulate what the WebhookBridge bot posts for one Discord message, and send it
+# through labs/discord-to-msg. In production WebhookBridge itself posts this
+# shape to the service URL; the gateway converts it into a `msg` and delivers
+# it to the room connector stored in DISCORD_TO_MSG_ROOM_URL.
+#   local_testing : POST the converted msg straight to the room webhook.
+#   gateway       : POST the WebhookBridge event to the service (Bearer auth).
+set -o pipefail
+
+{% if local_testing %}
+URL="${DISCORD_TO_MSG_ROOM_URL:?DISCORD_TO_MSG_ROOM_URL is not set (source seller.secrets.txt)}"
+status=$(curl -sS --max-time 10 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d '{"body":"Hello from **Discord**","format":"markdown","type":"info","attachments":[{"url":"https://cdn.discordapp.com/attachments/1/2/photo.png"}],"origin":{"service":"discord","external_id":"345","author":"Example User"}}' \
+    -o /dev/null -w "%{http_code}" \
+    "$URL" 2>/dev/null)
+{% else %}
+URL="{{ service_base_url }}"
+status=$(curl -sS --max-time 10 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d '{"event_type":"discord.message.created","guild_id":"123456789012345678","channel_id":"234567890123456789","message_id":"345678901234567890","user_id":"456789012345678901","username":"exampleuser","display_name":"Example User","message":"Hello from **Discord**","attachments":[{"url":"https://cdn.discordapp.com/attachments/1/2/photo.png","filename":"photo.png","content_type":"image/png","size":12345}],"timestamp":"2026-11-05T12:00:00.000Z"}' \
+    -o /dev/null -w "%{http_code}" \
+    "$URL" 2>/dev/null)
+{% endif %}
+
+case "$status" in
+  2??) echo "delivered (HTTP $status)"; exit 0 ;;
+  000) echo "send failed: could not connect to $URL" >&2; exit 1 ;;
+  *)   echo "send failed: HTTP $status from $URL" >&2; exit 1 ;;
+esac
