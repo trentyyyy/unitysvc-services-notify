@@ -1,3 +1,8 @@
+{#- Enrollment parameters live on the channel that reads them
+    (unitysvc/unitysvc#2726). Only the plus channel reads `{{ params.* }}`, so
+    it carries the param file's schema and test values; the free channel
+    declares none. -#}
+{%- set plus_params = {"schema": user_parameters_schema, "testing_defaults": ops_testing_parameters} %}
 {
   "capabilities": [
     "notification-relay"
@@ -33,7 +38,8 @@
     "plus": {
       "access_method": "http",{% if plus_api_key %}
       "api_key": {{ plus_api_key | tojson }},{% endif %}
-      "base_url": {{ plus_base_url | tojson }}{% if plus_headers %},
+      "base_url": {{ plus_base_url | tojson }},
+      "params": {{ plus_params | tojson }}{% if plus_headers %},
       "request_transformer": {
         "proxy_rewrite": {
           "headers": {

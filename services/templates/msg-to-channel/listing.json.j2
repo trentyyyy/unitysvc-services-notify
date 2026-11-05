@@ -69,12 +69,11 @@
     "type": "channel"
   },
   "name": "labs/{{ channel_name }}",
-  "service_options": {
 {%- if default_visibility is defined %}
-    "default_visibility": {{ default_visibility | tojson }},
-{%- endif %}
-    "ops_testing_parameters": {{ ops_testing_parameters | tojson }}
+  "service_options": {
+    "default_visibility": {{ default_visibility | tojson }}
   },
+{%- endif %}
   "status": "{{ status | default('ready') }}",
   "time_created": "{{ time_created | default('2026-06-19T00:00:00Z') }}",
   "user_access_interfaces": {
@@ -82,6 +81,5 @@
       "access_method": "http",
       "base_url": "${API_GATEWAY_BASE_URL}/{% raw %}{{ service_name }}{% endraw %}"
     }
-  },
-  "user_parameters_schema": {{ user_parameters_schema | tojson }}
+  }
 }
