@@ -1,42 +1,44 @@
 {
   "parameters": {
-    "apprise_url": "gchat://${ customer_secrets.GOOGLECHAT_WORKSPACE }/${ customer_secrets.GOOGLECHAT_WEBHOOK_KEY }/${ customer_secrets.GOOGLECHAT_WEBHOOK_TOKEN }",
-    "apprise_url_plus": "gchat://${ customer_secrets.{{ params.workspace_secret }} }/${ customer_secrets.{{ params.webhook_key_secret }} }/${ customer_secrets.{{ params.webhook_token_secret }} }",
     "channel_name": "msg-to-googlechat",
     "code_example_preset": "msg_to_apprise_code_example_py",
     "connectivity_preset": "msg_to_apprise_connectivity",
-    "default_visibility": "private",
-    "description": "`msg-to-googlechat` accepts an HTTP POST carrying the unified `msg` envelope (`title`, `body`, `type`, `format`), attaches the credentials in your stored secrets, and delivers the message to your Google Chat destination — so you run no messaging infrastructure of your own.\n\nDelivery goes out through [Apprise](https://github.com/caronc/apprise), the open-source notification library, driven entirely by your own stored credentials at no cost. A paid variant ($0.001 per message) delivers to additional Google Chat destinations bound per enrollment.\n\nIn Google Chat, open the room you want to notify, choose Apps & integrations from the room menu, select Manage webhooks, give the webhook a name, and click Save. Copy the resulting Webhook URL — it looks like https://chat.googleapis.com/v1/spaces/<WORKSPACE>/messages?key=<KEY>&token=<TOKEN> — and split it into its three pieces to fill in GOOGLECHAT_WORKSPACE, GOOGLECHAT_WEBHOOK_KEY, and GOOGLECHAT_WEBHOOK_TOKEN.",
+    "description": "`msg-to-googlechat` accepts an HTTP POST carrying the unified `msg` envelope (`title`, `body`, `type`, `format`), attaches the credentials in your stored secrets, and delivers the message to your Google Chat space — so you run no messaging infrastructure of your own.\n\nDelivery goes out through a native gateway transformation that posts straight to your space's incoming webhook URL, sending the message as the webhook's `text` field with the title on its own line above the body — free, and driven entirely by the credentials you have stored. Paid variants ($0.001 / message) deliver to additional Google Chat spaces bound per enrollment.\n\nIn Google Chat, open the space you want to notify, choose Apps & integrations from the space menu, select Manage webhooks, give the webhook a name, and click Save. Copy the resulting Webhook URL — it looks like https://chat.googleapis.com/v1/spaces/<SPACE>/messages?key=<KEY>&token=<TOKEN> — and paste the whole URL into the GOOGLECHAT_WEBHOOK_URL secret.",
     "display_name": "Google Chat Messages",
+    "gateway_code_example_preset": "msg_to_channel_code_example_py_googlechat",
+    "gateway_connectivity_preset": "msg_to_channel_connectivity_googlechat",
+    "gateway_field_mapping": {
+      "text": "@msg.body"
+    },
+    "gateway_test_local_url": "https://mock.unitysvc.dev/gchat/v1/spaces/googlechatorg/messages?key=googlechatwebhookkeyxyz123&token=googlechatwebhooktokenxyz123",
+    "gateway_url": "${ customer_secrets.GOOGLECHAT_WEBHOOK_URL }",
+    "gateway_url_plus": "${ customer_secrets.{{ params.webhook_url_secret }} }",
     "logo": "https://cdn.simpleicons.org/googlechat/34A853",
+    "msg_capabilities": {
+      "formats": [
+        "text"
+      ],
+      "images": 0,
+      "links": 0,
+      "title": false
+    },
     "ops_testing_parameters": {
       "base_url": "https://mock.unitysvc.dev/apprise/notify",
-      "webhook_key_secret": "GOOGLECHAT_WEBHOOK_KEY",
-      "webhook_token_secret": "GOOGLECHAT_WEBHOOK_TOKEN",
-      "workspace_secret": "GOOGLECHAT_WORKSPACE"
+      "webhook_url_secret": "GOOGLECHAT_WEBHOOK_URL"
     },
     "summary": "Send a notification to your own Google Chat destination by posting a simple `msg` request to the UnitySVC gateway.",
     "test_apprise_url": "gchat://googlechatorg/googlechatwebhookkeyxyz123/googlechatwebhooktokenxyz123",
     "time_created": "2026-06-20T00:00:00Z",
+    "transformer_channel_exists": true,
     "user_parameters_schema": {
       "properties": {
-        "webhook_key_secret": {
-          "description": "Name of the customer secret holding this enrollment's Google Chat webhook key",
-          "type": "string"
-        },
-        "webhook_token_secret": {
-          "description": "Name of the customer secret holding this enrollment's Google Chat webhook token",
-          "type": "string"
-        },
-        "workspace_secret": {
-          "description": "Name of the customer secret holding this enrollment's Google Chat workspace",
+        "webhook_url_secret": {
+          "description": "Name of the customer secret holding this enrollment's Google Chat webhook URL",
           "type": "string"
         }
       },
       "required": [
-        "workspace_secret",
-        "webhook_key_secret",
-        "webhook_token_secret"
+        "webhook_url_secret"
       ],
       "type": "object"
     }

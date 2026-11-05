@@ -1,35 +1,29 @@
 {
   "parameters": {
-    "byok_base_url": "${ customer_secrets._DISCORD_WEBHOOK_BASE ?? https://discord.com/api/webhooks }/${ customer_secrets.DISCORD_WEBHOOK_ID }/${ customer_secrets.DISCORD_WEBHOOK_TOKEN }",
+    "byok_base_url": "${ customer_secrets.DISCORD_WEBHOOK_URL }",
     "channel_name": "discord-relay",
     "code_example_preset": "notify_relay_code_example_py_discord",
     "connectivity_preset": "notify_relay_connectivity_discord",
-    "description": "`discord-relay` accepts an HTTP POST with a native Discord webhook payload (e.g. {\"content\": \"...\"} or {\"embeds\": [...]}). The gateway composes your webhook URL from your stored secrets and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored webhook; the `plus` channel binds extra per-enrollment webhooks via enrollment parameters.",
+    "description": "`discord-relay` accepts an HTTP POST with a native Discord webhook payload (e.g. {\"content\": \"...\"} or {\"embeds\": [...]}). The gateway forwards the request to the webhook URL in your stored secret, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored webhook; the `plus` channel binds extra per-enrollment webhooks via enrollment parameters.",
     "display_name": "Discord Relay",
     "logo": "https://cdn.simpleicons.org/discord/5865F2",
     "ops_testing_parameters": {
       "base_url": "https://mock.unitysvc.dev/discord/api/webhooks",
-      "webhook_id_secret": "DISCORD_WEBHOOK_ID",
-      "webhook_token_secret": "DISCORD_WEBHOOK_TOKEN"
+      "webhook_url_secret": "DISCORD_WEBHOOK_URL"
     },
-    "plus_base_url": "${ customer_secrets._DISCORD_WEBHOOK_BASE ?? https://discord.com/api/webhooks }/${ customer_secrets.{{ params.webhook_id_secret }} }/${ customer_secrets.{{ params.webhook_token_secret }} }",
+    "plus_base_url": "${ customer_secrets.{{ params.webhook_url_secret }} }",
     "summary": "Relay a message to your own Discord channel by posting a native Discord webhook payload to the UnitySVC gateway.",
-    "test_webhook_path": "/demo/demotoken",
+    "test_webhook_path": "",
     "time_created": "2026-06-19T00:00:00Z",
     "user_parameters_schema": {
       "properties": {
-        "webhook_id_secret": {
-          "description": "Name of the customer secret holding this enrollment's Discord webhook id",
-          "type": "string"
-        },
-        "webhook_token_secret": {
-          "description": "Name of the customer secret holding this enrollment's Discord webhook token",
+        "webhook_url_secret": {
+          "description": "Name of the customer secret holding this enrollment's Discord webhook URL",
           "type": "string"
         }
       },
       "required": [
-        "webhook_id_secret",
-        "webhook_token_secret"
+        "webhook_url_secret"
       ],
       "type": "object"
     }
