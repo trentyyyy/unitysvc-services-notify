@@ -4,6 +4,7 @@
     "channel_name": "smseagle-sms-relay",
     "code_example_preset": "notify_relay_code_example_py_smseagle_sms",
     "connectivity_preset": "notify_relay_connectivity_smseagle_sms",
+    "default_visibility": "private",
     "description": "`smseagle-sms-relay` accepts an HTTP POST with a native `smseagle_sms` payload that includes your credential field; the gateway forwards it to the upstream, so you run no messaging infrastructure of your own.\n\nTwo channels are available: the free `byok` channel relays your own authenticated payload; the `plus` channel is the metered tier.",
     "display_name": "SMSEagle Relay",
     "logo": "https://mma.prnewswire.com/media/814246/SMSEagle_Logo.jpg?p=facebook",

@@ -4,6 +4,7 @@
     "channel_name": "dingtalk-relay",
     "code_example_preset": "notify_relay_code_example_py_dingtalk",
     "connectivity_preset": "notify_relay_connectivity_dingtalk",
+    "default_visibility": "private",
     "description": "`dingtalk-relay` accepts an HTTP POST with a native `dingtalk` payload. The gateway composes the upstream DingTalk URL from your stored secrets and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds extra per-enrollment destinations via enrollment parameters.",
     "display_name": "DingTalk Relay",
     "logo": "https://api.iconify.design/ant-design:dingtalk-circle-filled.svg?color=%231677FF",

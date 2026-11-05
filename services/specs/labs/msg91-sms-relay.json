@@ -7,6 +7,7 @@
     "channel_name": "msg91-sms-relay",
     "code_example_preset": "notify_relay_code_example_py_msg91_sms",
     "connectivity_preset": "notify_relay_connectivity_msg91_sms",
+    "default_visibility": "private",
     "description": "`msg91-sms-relay` accepts an HTTP POST with a native `msg91_sms` payload. The gateway composes the upstream MSG91 URL from your stored secrets, injects your credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters.",
     "display_name": "MSG91 SMS Relay",
     "logo": "https://msg91.com/assets/brand/favicon.svg",

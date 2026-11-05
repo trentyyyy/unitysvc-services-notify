@@ -4,6 +4,7 @@
     "channel_name": "chanify-relay",
     "code_example_preset": "notify_relay_code_example_py_chanify",
     "connectivity_preset": "notify_relay_connectivity_chanify",
+    "default_visibility": "private",
     "description": "`chanify-relay` accepts an HTTP POST with a native `chanify` payload. The gateway composes the upstream Chanify URL from your stored secrets and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds extra per-enrollment destinations via enrollment parameters.",
     "display_name": "Chanify Relay",
     "logo": "https://raw.githubusercontent.com/chanify/chanify-ios/main/iOS/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-iTunes.png",

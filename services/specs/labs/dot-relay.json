@@ -5,6 +5,7 @@
     "channel_name": "dot-relay",
     "code_example_preset": "notify_relay_code_example_py_dot",
     "connectivity_preset": "notify_relay_connectivity_dot",
+    "default_visibility": "private",
     "description": "`dot-relay` accepts an HTTP POST with a native `dot` payload. The gateway composes the upstream Dot URL from your stored secrets, injects your credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters.",
     "display_name": "Dot Relay",
     "logo": "https://api.iconify.design/mdi:message-text-fast-outline.svg?color=%2300BCEB",

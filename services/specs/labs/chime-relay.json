@@ -4,6 +4,7 @@
     "channel_name": "chime-relay",
     "code_example_preset": "notify_relay_code_example_py_chime",
     "connectivity_preset": "notify_relay_connectivity_chime",
+    "default_visibility": "private",
     "description": "`chime-relay` accepts an HTTP POST with a native `chime` payload. The gateway composes the upstream Amazon Chime URL from your stored secrets and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds extra per-enrollment destinations via enrollment parameters.",
     "display_name": "Amazon Chime Relay",
     "logo": "https://api.iconify.design/logos:amazon-chime.svg",

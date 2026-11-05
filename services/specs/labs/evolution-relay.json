@@ -7,6 +7,7 @@
     "channel_name": "evolution-relay",
     "code_example_preset": "notify_relay_code_example_py_evolution",
     "connectivity_preset": "notify_relay_connectivity_evolution",
+    "default_visibility": "private",
     "description": "`evolution-relay` accepts an HTTP POST with a native `evolution` payload. The gateway composes the upstream Evolution API URL from your stored secrets, injects your credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters.",
     "display_name": "Evolution API Relay",
     "logo": "https://raw.githubusercontent.com/EvolutionAPI/evolution-api/main/public/images/evolution-logo.png",

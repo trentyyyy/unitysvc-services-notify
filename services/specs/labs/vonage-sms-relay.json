@@ -4,6 +4,7 @@
     "channel_name": "vonage-sms-relay",
     "code_example_preset": "notify_relay_code_example_py_vonage_sms",
     "connectivity_preset": "notify_relay_connectivity_vonage_sms",
+    "default_visibility": "private",
     "description": "`vonage-sms-relay` accepts an HTTP POST with a native `vonage_sms` payload that includes your credential field. The gateway forwards it to the upstream Vonage endpoint, so you run no messaging infrastructure of your own.\n\nTwo channels are available: the free `byok` channel relays your own authenticated payload; the `plus` channel is the metered tier.",
     "display_name": "Vonage SMS Relay",
     "logo": "https://cdn.simpleicons.org/vonage/7B61FF",

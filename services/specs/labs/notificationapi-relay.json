@@ -7,6 +7,7 @@
     "channel_name": "notificationapi-relay",
     "code_example_preset": "notify_relay_code_example_py_notificationapi",
     "connectivity_preset": "notify_relay_connectivity_notificationapi",
+    "default_visibility": "private",
     "description": "`notificationapi-relay` accepts an HTTP POST with a native `notificationapi` payload. The gateway composes the upstream NotificationAPI URL from your stored secrets, injects your credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters.",
     "display_name": "NotificationAPI Relay",
     "logo": "https://www.notificationapi.com/images/pingram/pingram-favicon-dark.svg",

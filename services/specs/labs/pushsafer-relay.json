@@ -4,6 +4,7 @@
     "channel_name": "pushsafer-relay",
     "code_example_preset": "notify_relay_code_example_py_pushsafer",
     "connectivity_preset": "notify_relay_connectivity_pushsafer",
+    "default_visibility": "private",
     "description": "`pushsafer-relay` accepts an HTTP POST with a native `pushsafer` payload that includes your Pushsafer private or alias key (the `k` form field). The gateway forwards it to the upstream Pushsafer API, so you run no messaging infrastructure of your own.\n\nTwo channels are available: the free `byok` channel relays your own authenticated payload; the `plus` channel is the metered tier.",
     "display_name": "Pushsafer Relay",
     "logo": "https://www.pushsafer.com/icon512.png",

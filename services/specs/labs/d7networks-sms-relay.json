@@ -5,6 +5,7 @@
     "channel_name": "d7networks-sms-relay",
     "code_example_preset": "notify_relay_code_example_py_d7networks_sms",
     "connectivity_preset": "notify_relay_connectivity_d7networks_sms",
+    "default_visibility": "private",
     "description": "`d7networks-sms-relay` accepts an HTTP POST with a native `d7networks_sms` payload. The gateway composes the upstream D7 Networks URL from your stored secrets, injects your credential header, and forwards the request, so your credentials never leave the platform.\n\nTwo channels are available: the free `byok` channel uses your own stored credentials; the `plus` channel binds an extra per-enrollment credential via enrollment parameters.",
     "display_name": "D7 Networks SMS Relay",
     "logo": "https://d7networks.com/static/assets/images/logo-icon.caf18bccbb75.svg",
