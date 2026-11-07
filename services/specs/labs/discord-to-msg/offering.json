@@ -2,7 +2,7 @@
   "capabilities": [
     "receive-message"
   ],
-  "description": "`discord-to-msg` turns a Discord message event, as the WebhookBridge bot posts it, into the unified `msg` envelope and delivers it into one of your UnitySVC rooms through the room's connector webhook — the reverse of `msg-to-discord`.\n\nWebhookBridge watches a Discord channel and POSTs each new message as JSON (`message`, `display_name`, `message_id`, `attachments`, …) to a URL of your choice. Pointed at this service, the gateway maps that event onto the `msg` fields the room webhook accepts — the text as `body` (Discord markdown kept as `markdown`), the attachment URLs, and an `origin` of `discord` carrying the Discord message id and the author's display name — and forwards it to the room connector URL stored in your secrets. The message id doubles as the idempotency key, so a redelivered event is not posted twice. Free: delivery goes straight to your own room.\n\nStore the webhook URL of a room connector (Rooms → the room → Delivery → the connector's webhook URL; it contains your room-webhook key, keep it secret) as the `DISCORD_TO_MSG_ROOM_URL` secret, then give WebhookBridge this service's canonical URL as the channel's destination. Paid enrollments ($0.001 / message) bind a different room connector each, reached at `/e/<code>`. See “How to use this service” for the setup walkthrough.",
+  "description": "`discord-to-msg` turns a Discord message event, as the WebhookBridge bot posts it, into the unified `msg` envelope and posts it into one of your UnitySVC rooms through the room connector named in the URL — the reverse of `msg-to-discord`.\n\nWebhookBridge watches a Discord channel and POSTs each new message as JSON (`message`, `display_name`, `message_id`, `attachments`, …) to a URL of your choice. Pointed at this service, the gateway maps that event onto the `msg` fields a room takes — the text as `body` (Discord markdown kept as `markdown`), the attachment URLs, and an `origin` of `discord` carrying the Discord message id and the author's display name — and hands it to the platform's `rooms://post` upstream, which posts it into the room as the connector's member. The message id doubles as the idempotency key, so a redelivered event is not posted twice. Free.\n\nNothing to configure on the service: the room is named by the connector id in the URL, and the key rides in the URL too, so a sender that sets no headers can use it. In UnitySVC open Rooms → the room → Delivery → the connector, choose Discord to Messages as its inbound service, and give WebhookBridge the URL it shows (`https://api.svcpass.com/webhook/<KEY>/labs/discord-to-msg/<connector id>`) as the channel's destination. Keep that URL private: it carries a key that may post into the room. See “How to use this service” for the setup walkthrough.",
   "details": {
     "input_formats": [
       "x-webhookbridge-discord"
@@ -23,8 +23,7 @@
   "upstream_access_config": {
     "gateway": {
       "access_method": "http",
-      "api_key": "__strip__",
-      "base_url": "${ customer_secrets.DISCORD_TO_MSG_ROOM_URL }",
+      "base_url": "rooms://post",
       "payload_format": "msg",
       "request_transformer": {
         "msg_transformer": {
@@ -47,72 +46,10 @@
               "service": "discord"
             },
             "type": "@msg.type"
-          }
-        },
-        "proxy_rewrite": {
-          "headers": {
-            "set": {
-              "Content-Type": "application/json"
-            }
           }
         }
       },
       "sort_order": 1
-    },
-    "gateway-plus": {
-      "access_method": "http",
-      "api_key": "__strip__",
-      "base_url": "${ customer_secrets.{{ params.room_url_secret }} }",
-      "params": {
-        "schema": {
-          "properties": {
-            "room_url_secret": {
-              "description": "Name of the customer secret holding this enrollment's room connector webhook URL",
-              "type": "string"
-            }
-          },
-          "required": [
-            "room_url_secret"
-          ],
-          "type": "object"
-        },
-        "testing_defaults": {
-          "room_url_secret": "DISCORD_TO_MSG_ROOM_URL"
-        }
-      },
-      "payload_format": "msg",
-      "request_transformer": {
-        "msg_transformer": {
-          "capabilities": {
-            "formats": [
-              "markdown",
-              "text"
-            ],
-            "images": 0,
-            "links": 10,
-            "title": true
-          },
-          "field_mapping": {
-            "attachments": "@msg.attachment",
-            "body": "@msg.body",
-            "format": "markdown",
-            "origin": {
-              "author": "@in.display_name",
-              "external_id": "@in.message_id",
-              "service": "discord"
-            },
-            "type": "@msg.type"
-          }
-        },
-        "proxy_rewrite": {
-          "headers": {
-            "set": {
-              "Content-Type": "application/json"
-            }
-          }
-        }
-      },
-      "sort_order": 3
     }
   }
 }
