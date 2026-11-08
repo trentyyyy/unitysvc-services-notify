@@ -21,7 +21,7 @@ status=$(curl -sS --max-time 15 \
     -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
-    -d '{"type":"MESSAGE","eventTime":"2026-11-08T12:00:00.000000Z","space":{"name":"spaces/AAAAexample","type":"SPACE","displayName":"Team"},"user":{"name":"users/123456789","displayName":"Example User","type":"HUMAN"},"message":{"name":"spaces/AAAAexample/messages/abc.def","sender":{"name":"users/123456789","displayName":"Example User","type":"HUMAN"},"text":"@UnitySVC Hello from Google Chat","argumentText":" Hello from Google Chat","createTime":"2026-11-08T12:00:00.000000Z"}}' \
+    -d '{"hostApp":"chat","commonEventObject":{"hostApp":"CHAT","platform":"WEB"},"chat":{"eventTime":"2026-11-08T12:00:00.000000Z","user":{"name":"users/123456789","displayName":"Example User","type":"HUMAN"},"messagePayload":{"space":{"name":"spaces/AAAAexample","spaceType":"SPACE","displayName":"Team"},"message":{"name":"spaces/AAAAexample/messages/abc.abc","sender":{"name":"users/123456789","displayName":"Example User","type":"HUMAN"},"text":"@UnitySVC Hello from Google Chat","argumentText":" Hello from Google Chat","createTime":"2026-11-08T12:00:00.000000Z"}}}}' \
     -o /dev/null -w "%{http_code}" \
     "$URL" 2>/dev/null)
 

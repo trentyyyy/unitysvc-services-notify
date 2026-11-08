@@ -8,12 +8,12 @@ A Chat app sees only messages addressed to it: direct messages to the app, and m
 
 | `msg` field          | Source in the Google Chat event                                        |
 | -------------------- | ---------------------------------------------------------------------- |
-| `body`               | `message.argumentText`: the text with the app's @mention removed      |
+| `body`               | `chat.messagePayload.message.argumentText`: the text with the app's @mention removed |
 | `format`             | always `text`                                                          |
 | `type`               | `info`                                                                 |
 | `origin.service`     | `googlechat`                                                           |
-| `origin.external_id` | `message.name` (`spaces/…/messages/…`), also the idempotency key, so a redelivered event is posted once |
-| `origin.author`      | `message.sender.displayName`                                           |
+| `origin.external_id` | `chat.messagePayload.message.name` (`spaces/…/messages/…`), also the idempotency key, so a redelivered event is posted once |
+| `origin.author`      | `chat.messagePayload.message.sender.displayName`                       |
 
 Everything else in the event (`space`, `user`, `eventTime`, `message.text`, annotations, attachments) is dropped. The message is posted as you (the connector's member), attributed to the connector, with the Google Chat author shown as its origin. Events that carry no message, such as the app being added to a space, post nothing.
 

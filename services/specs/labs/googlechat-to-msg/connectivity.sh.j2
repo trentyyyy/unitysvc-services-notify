@@ -22,7 +22,7 @@ status=$(curl -sS --max-time 15 \
     -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
-    -d "{\"type\":\"MESSAGE\",\"eventTime\":\"2026-11-08T00:00:00.000000Z\",\"space\":{\"name\":\"spaces/AAAAexample\",\"type\":\"SPACE\"},\"user\":{\"name\":\"users/1\",\"displayName\":\"Example User\",\"type\":\"HUMAN\"},\"message\":{\"name\":\"spaces/AAAAexample/messages/$MARKER\",\"sender\":{\"name\":\"users/1\",\"displayName\":\"Example User\",\"type\":\"HUMAN\"},\"text\":\"@UnitySVC connectivity probe\",\"argumentText\":\" connectivity probe\"}}" \
+    -d "{\"hostApp\":\"chat\",\"commonEventObject\":{\"hostApp\":\"CHAT\",\"platform\":\"WEB\"},\"chat\":{\"eventTime\":\"2026-11-08T00:00:00.000000Z\",\"user\":{\"name\":\"users/1\",\"displayName\":\"Example User\",\"type\":\"HUMAN\"},\"messagePayload\":{\"space\":{\"name\":\"spaces/AAAAexample\",\"spaceType\":\"SPACE\"},\"message\":{\"name\":\"spaces/AAAAexample/messages/$MARKER\",\"sender\":{\"name\":\"users/1\",\"displayName\":\"Example User\",\"type\":\"HUMAN\"},\"text\":\"@UnitySVC connectivity probe\",\"argumentText\":\" connectivity probe\"}}}}" \
     -o /dev/null -w "%{http_code}" \
     "$URL" 2>/dev/null)
 
