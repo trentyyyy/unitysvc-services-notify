@@ -1,16 +1,4 @@
 #!/bin/bash
-# Connectivity test for labs/googlechat-to-msg — a Google Chat MESSAGE event
-# converted by the gateway into the msg envelope and posted into a room by
-# the gateway-native rooms://post upstream (unitysvc/unitysvc#2918). There is
-# NO seller upstream: the gateway short-circuits the request and the platform
-# backend posts the message.
-#   local_testing : there is no server to reach — the response is produced by
-#                   the gateway itself (cf. msg-to-mailbox). This branch
-#                   always passes; it exists only to confirm wiring.
-#   gateway       : POST the Google Chat event through the gateway (Bearer
-#                   auth) and expect 2xx (202 Accepted — the message is
-#                   posted). With no connector id in the URL it lands in the
-#                   caller's own `me` room, so the test needs no setup.
 set -o pipefail
 
 {% if local_testing %}

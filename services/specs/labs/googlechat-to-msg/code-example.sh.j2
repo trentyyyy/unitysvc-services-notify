@@ -1,15 +1,4 @@
 #!/bin/bash
-# Simulate what a Google Chat app posts when someone @mentions it in a space,
-# and send it through labs/googlechat-to-msg. In production Google Chat itself
-# posts this event to the app's HTTP endpoint URL, which is the connector's
-# webhook URL (Rooms → the room → Delivery → the connector),
-# https://api.svcpass.com/webhook/<KEY>/labs/googlechat-to-msg/<connector id>,
-# which carries the key in the URL because Google sends its own token in
-# Authorization. This example sends the key as a header instead, which the
-# gateway takes equally, and names no connector, so the message lands in the
-# caller's own `me` room.
-#   local_testing : there is no upstream to reach (gateway-native rooms://post).
-#   gateway       : POST the Google Chat event to the service (Bearer auth).
 set -o pipefail
 
 {% if local_testing %}
