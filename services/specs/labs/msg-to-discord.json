@@ -3,7 +3,7 @@
     "channel_name": "msg-to-discord",
     "code_example_preset": "msg_to_apprise_code_example_py",
     "connectivity_preset": "msg_to_apprise_connectivity",
-    "description": "Send plain Discord messages from the unified `msg` envelope, with the title as the sender name and an optional profile picture.\n\nThe gateway posts directly to your Discord webhook: `body` becomes ordinary message content, `title` becomes the username, and an HTTPS `avatar_url` overrides the webhook avatar. Links fold into the content. Long names and content are truncated to 80 and 2000 characters; names containing Discord-reserved words fall back to the webhook name.\n\nCreate a webhook under Discord channel Settings → Integrations → Webhooks and save its full URL in DISCORD_WEBHOOK_URL for the free gateway channel. Use gateway-plus for an additional destination selected by the enrollment's webhook_url_secret parameter. See How to use this service for examples and limits.",
+    "description": "Send plain Discord messages from the unified `msg` envelope, with the title as the sender name and an optional profile picture.\n\nThe gateway posts directly to your Discord webhook: `body` becomes ordinary message content, `title` becomes the username, and an HTTPS `avatar_url` overrides the webhook avatar. The first image attachment appears in an image-only embed below the plain text. Links fold into the content. Long names and content are truncated to 80 and 2000 characters; names containing Discord-reserved words fall back to the webhook name.\n\nCreate a webhook under Discord channel Settings → Integrations → Webhooks and save its full URL in DISCORD_WEBHOOK_URL for the free gateway channel. Use gateway-plus for an additional destination selected by the enrollment's webhook_url_secret parameter. See How to use this service for examples and limits.",
     "display_name": "Discord Messages",
     "gateway_documents": {
       "Connectivity test": {
@@ -71,6 +71,13 @@
     "gateway_field_mapping": {
       "avatar_url": "@msg.avatar_url",
       "content": "@msg.body",
+      "embeds": [
+        {
+          "image": {
+            "url": "@msg.image_url"
+          }
+        }
+      ],
       "username": "@msg.title"
     },
     "gateway_test_local_url": "https://mock.unitysvc.dev/discord/api/webhooks/demo/demotoken",
@@ -88,7 +95,7 @@
         "markdown",
         "text"
       ],
-      "images": 0,
+      "images": 1,
       "limits": {
         "body": 2000,
         "title": 80

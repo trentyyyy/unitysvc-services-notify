@@ -32,9 +32,17 @@ omitted, keeping the configured avatar. Links fold into the content before
 truncation and count toward its limit. Overlong messages are truncated, not
 split into multiple posts.
 
-This plain-message mapping does not send embed images or attachments. Sending
-an image URL in `links` includes it in the text; attachment delivery is a
-separate feature. The message must contain some text or a link. Inbound Discord
+The first image attachment appears below the plain text in an image-only
+embed. For example, add `"attachment": [{"url": "https://example.com/photo.png",
+"filename": "photo.png", "type": "image/png"}]` to the request. Room delivery
+supplies the attachment URL and MIME type automatically. With no image, no
+embed is sent. Text-only messages keep their plain appearance.
+
+Only the first image is shown. Additional images and non-image files are not
+mapped to Discord file uploads; include their URLs in `links` when they need
+to reach the recipient as download links. Keep signed URL query strings intact.
+Discord must be able to fetch the image URL when the message is delivered.
+The message needs text, a link or an image. Inbound Discord
 messages use the separate `labs/discord-to-msg` service.
 
 Deployment requires the gateway changes from `unitysvc/apisix-gateways#91` to
