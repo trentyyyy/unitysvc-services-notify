@@ -1,0 +1,53 @@
+{
+  "capabilities": [
+    "receive-message"
+  ],
+  "description": "`googlechat-to-msg` accepts the events your Google Chat app sends when someone messages it and converts each into UnitySVC's native `msg` format, posted into one of your rooms.\n\nA Google Chat app configured with an HTTP endpoint POSTs an interaction event for every direct message to it and every message that @mentions it in a space. The service maps that event onto the `msg` fields a room takes: the text with the app's @mention removed (`message.argumentText`) as a plain-text `body`, and an `origin` of `googlechat` carrying the Google message name and the sender's display name. It posts the result into the room as the member of the connector it came in through, attributed to that connector. The message name doubles as the idempotency key, so a redelivered event is not posted twice. Free.\n\nIn UnitySVC open Rooms → the room → Delivery, add a connector for the Google Chat space (or use `main`) and choose Google Chat to Messages as its inbound service; paste the URL the connector shows into your Chat app's HTTP endpoint URL in the Google Cloud console. Needs a Google Workspace account whose admin allows Chat apps. No secrets and no enrollment to set up. See “How to use this service” for the walkthrough.",
+  "details": {
+    "input_formats": [
+      "x-googlechat-event"
+    ],
+    "output_formats": [
+      "msg"
+    ]
+  },
+  "logo": "https://cdn.simpleicons.org/googlechat/34A853",
+  "name": "googlechat-to-msg",
+  "service_type": "notification",
+  "status": "ready",
+  "summary": "Bring Google Chat messages into a UnitySVC room: your Chat app posts each event here, the gateway converts it into a `msg` and delivers it through your room connector.",
+  "tags": [
+    "warning:unverified?stats.successful_requests==0 | Tested against a simulated upstream only — no customer has used it yet"
+  ],
+  "time_created": "2026-11-08T00:00:00Z",
+  "upstream_access_config": {
+    "gateway": {
+      "access_method": "http",
+      "base_url": "rooms://post",
+      "payload_format": "msg",
+      "request_transformer": {
+        "msg_transformer": {
+          "capabilities": {
+            "formats": [
+              "text"
+            ],
+            "images": 0,
+            "links": 10,
+            "title": true
+          },
+          "field_mapping": {
+            "body": "@in.message.argumentText",
+            "format": "text",
+            "origin": {
+              "author": "@in.message.sender.displayName",
+              "external_id": "@in.message.name",
+              "service": "googlechat"
+            },
+            "type": "@msg.type"
+          }
+        }
+      },
+      "sort_order": 1
+    }
+  }
+}

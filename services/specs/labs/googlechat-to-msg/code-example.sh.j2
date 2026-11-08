@@ -1,0 +1,33 @@
+#!/bin/bash
+# Simulate what a Google Chat app posts when someone @mentions it in a space,
+# and send it through labs/googlechat-to-msg. In production Google Chat itself
+# posts this event to the app's HTTP endpoint URL, which is the connector's
+# webhook URL (Rooms → the room → Delivery → the connector),
+# https://api.svcpass.com/webhook/<KEY>/labs/googlechat-to-msg/<connector id>,
+# which carries the key in the URL because Google sends its own token in
+# Authorization. This example sends the key as a header instead, which the
+# gateway takes equally, and names no connector, so the message lands in the
+# caller's own `me` room.
+#   local_testing : there is no upstream to reach (gateway-native rooms://post).
+#   gateway       : POST the Google Chat event to the service (Bearer auth).
+set -o pipefail
+
+{% if local_testing %}
+echo "delivered (skipped: gateway-native rooms://post, no upstream)"
+exit 0
+{% else %}
+URL="{{ service_base_url }}"
+status=$(curl -sS --max-time 15 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d '{"type":"MESSAGE","eventTime":"2026-11-08T12:00:00.000000Z","space":{"name":"spaces/AAAAexample","type":"SPACE","displayName":"Team"},"user":{"name":"users/123456789","displayName":"Example User","type":"HUMAN"},"message":{"name":"spaces/AAAAexample/messages/abc.def","sender":{"name":"users/123456789","displayName":"Example User","type":"HUMAN"},"text":"@UnitySVC Hello from Google Chat","argumentText":" Hello from Google Chat","createTime":"2026-11-08T12:00:00.000000Z"}}' \
+    -o /dev/null -w "%{http_code}" \
+    "$URL" 2>/dev/null)
+
+case "$status" in
+  2??) echo "delivered (HTTP $status)"; exit 0 ;;
+  000) echo "send failed: could not connect to $URL" >&2; exit 1 ;;
+  *)   echo "send failed: HTTP $status from $URL" >&2; exit 1 ;;
+esac
+{% endif %}
