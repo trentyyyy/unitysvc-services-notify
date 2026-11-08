@@ -25,8 +25,8 @@ APP badge. Room delivery supplies its own sender/room title; this service does
 not infer identity or look up a person's profile picture.
 
 Names longer than 80 Unicode codepoints and content longer than 2000 are
-truncated with a final ellipsis. A title containing `discord` or `clyde`, in any
-ASCII letter case, is omitted so Discord uses its configured webhook name.
+truncated with a final ellipsis. Names containing `discord` or `clyde`, in any ASCII letter case, are rewritten
+with `dis_cord` or `cl_yde` so the username remains valid.
 An absent or empty title also keeps that name. Non-HTTPS avatar URLs are
 omitted, keeping the configured avatar. Links fold into the content before
 truncation and count toward its limit. Overlong messages are truncated, not
@@ -48,3 +48,25 @@ messages use the separate `labs/discord-to-msg` service.
 Deployment requires the gateway changes from `unitysvc/apisix-gateways#91` to
 be promoted before this service revision is uploaded or activated. The same
 normalizer and mapping apply to both `gateway` and `gateway-plus`.
+
+## Room connector marker
+
+With room metadata from backend #2944, the username is
+`<author> - <room name> (<connector_id[:6]>)`, for example
+`Bo Peng - Test Room (a1b2c3)`. The suffix uses the first six hexadecimal
+characters of the full canonical connector UUID. Only the readable prefix
+is shortened to fit 80 Unicode codepoints; the suffix is preserved. The
+connector name is not used. Without a valid connector UUID the ordinary title
+is used, without a marker. Missing names fall back to the title or `UnitySVC`.
+
+The reverse `labs/discord-to-msg` service preserves this username in
+`origin.author`. Backend echo refusal must acknowledge and discard a marked
+connector post only when its suffix matches a connector in the target room.
+That backend check is a deployment prerequisite: metadata alone does not
+suppress echoes. Keep this plain-message revision off production until the
+backend check and a staging round trip (including split inbound/outbound
+connectors) pass. Six hex characters are a loop-prevention convention, not
+identity proof; a user copying a matching suffix can have their message dropped.
+
+The payload disables automatic Discord mention parsing. Metadata and temporary
+formatting fields are not sent to Discord.
