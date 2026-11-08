@@ -52,6 +52,10 @@ ALLOWED_UNBOUND = {
         "pushsafer-relay",
     )
     for ch in ("byok", "plus")
+} | {
+    # Gateway-native upstream (rooms://post): the room comes from the connector
+    # id in the URL and the credential is the key, so there is no secret to set.
+    "discord-to-msg@gateway",
 }
 
 REF = re.compile(

@@ -1,58 +1,34 @@
 #!/bin/bash
 # Connectivity test for labs/discord-to-msg — a WebhookBridge Discord event
-# converted by the gateway into the msg envelope and delivered to a room
-# connector webhook.
-#   local_testing : POST the CONVERTED msg (what the gateway produces) straight
-#                   to the room webhook named by DISCORD_TO_MSG_ROOM_URL — the
-#                   mock's /rooms endpoint in seller testing, which rejects
-#                   what the real room webhook rejects. No gateway, no auth.
-#   gateway       : POST the WebhookBridge event to the service (Bearer auth),
-#                   expect 2xx, then read the delivered body back from the mock
-#                   and check the @in.* mapping landed (origin.external_id).
+# converted by the gateway into the msg envelope and posted into a room by
+# the gateway-native rooms://post upstream (unitysvc/unitysvc#2918). There is
+# NO seller upstream: the gateway short-circuits the request and the platform
+# backend posts the message.
+#   local_testing : there is no server to reach — the response is produced by
+#                   the gateway itself (cf. msg-to-mailbox). This branch
+#                   always passes; it exists only to confirm wiring.
+#   gateway       : POST the WebhookBridge event through the gateway (Bearer
+#                   auth) and expect 2xx (202 Accepted — the message is
+#                   posted). With no connector id in the URL it lands in the
+#                   caller's own `me` room, so the test needs no setup.
 set -o pipefail
 
-MARKER="connectivity-$(date +%s)-$RANDOM"
-
 {% if local_testing %}
-URL="${DISCORD_TO_MSG_ROOM_URL:?DISCORD_TO_MSG_ROOM_URL is not set (source seller.secrets.txt)}"
-status=$(curl -sS --max-time 10 \
-    -X POST \
-    -H "Content-Type: application/json" \
-    -d "{\"body\":\"connectivity probe\",\"format\":\"markdown\",\"type\":\"info\",\"origin\":{\"service\":\"discord\",\"external_id\":\"$MARKER\",\"author\":\"Example User\"}}" \
-    -o /dev/null -w "%{http_code}" \
-    "$URL" 2>/dev/null)
+echo "connectivity ok (gateway-native rooms://post, no upstream)"
 {% else %}
+MARKER="connectivity-$(date +%s)-$RANDOM"
 URL="{{ service_base_url }}"
-status=$(curl -sS --max-time 10 \
+status=$(curl -sS --max-time 15 \
     -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
     -d "{\"event_type\":\"discord.message.created\",\"guild_id\":\"1\",\"channel_id\":\"2\",\"message_id\":\"$MARKER\",\"user_id\":\"4\",\"username\":\"exampleuser\",\"display_name\":\"Example User\",\"message\":\"connectivity probe\",\"attachments\":[],\"timestamp\":\"2026-11-05T00:00:00.000Z\"}" \
     -o /dev/null -w "%{http_code}" \
     "$URL" 2>/dev/null)
-{% endif %}
 
 case "$status" in
-  2??) ;;
+  2??) echo "connectivity ok (HTTP $status)"; exit 0 ;;
   000) echo "connectivity failed: could not connect to $URL" >&2; exit 1 ;;
   *)   echo "connectivity failed: HTTP $status from $URL" >&2; exit 1 ;;
 esac
-
-{% if not local_testing %}
-# The seller's gateway tests deliver to the mock (DISCORD_TO_MSG_ROOM_URL seller
-# secret); read the delivered body back and check the conversion, not just
-# the status. A room webhook that is not the mock has no readback: skip then.
-readback=$(curl -sS --max-time 10 "https://mock.unitysvc.dev/__requests__?channel=rooms" 2>/dev/null)
-if [ -n "$readback" ] && printf '%s' "$readback" | grep -q "$MARKER"; then
-    if printf '%s' "$readback" | grep -q "\\\\\"external_id\\\\\": *\\\\\"$MARKER\\\\\""; then
-        echo "connectivity ok (HTTP $status; origin.external_id mapped from message_id)"
-        exit 0
-    fi
-    echo "connectivity failed: the delivered body does not carry origin.external_id=$MARKER (the @in mapping did not run)" >&2
-    exit 1
-fi
-echo "connectivity ok (HTTP $status; no mock readback for this upstream)"
-{% else %}
-echo "connectivity ok (HTTP $status)"
 {% endif %}
-exit 0

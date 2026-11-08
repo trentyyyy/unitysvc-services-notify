@@ -4,32 +4,10 @@
   "documents": {
     "Connectivity test": {
       "category": "connectivity_test",
-      "description": "POST a WebhookBridge-shaped Discord event and expect the converted msg to reach the room webhook",
+      "description": "POST a WebhookBridge-shaped Discord event through the gateway and expect 2xx",
       "file_path": "connectivity.sh.j2",
       "is_active": true,
       "is_public": false,
-      "meta": {
-        "channels": [
-          "gateway"
-        ]
-      },
-      "mime_type": "bash"
-    },
-    "Connectivity test (plus)": {
-      "category": "connectivity_test",
-      "description": "The same probe through a per-enrollment room connector",
-      "file_path": "connectivity.sh.j2",
-      "is_active": true,
-      "is_public": false,
-      "meta": {
-        "channels": [
-          "gateway-plus"
-        ],
-        "expected_charge": {
-          "amount": "0.001",
-          "tolerance": "0"
-        }
-      },
       "mime_type": "bash"
     },
     "How to use this service": {
@@ -46,31 +24,13 @@
       "file_path": "code-example.sh.j2",
       "is_active": true,
       "is_public": true,
-      "meta": {
-        "channels": [
-          "gateway"
-        ]
-      },
       "mime_type": "bash"
     }
   },
   "list_price": {
-    "channels": {
-      "gateway": {
-        "description": "Free — into your own room",
-        "price": "0",
-        "type": "constant"
-      },
-      "gateway-plus": {
-        "description": "$0.001 / message — extra per-enrollment room connectors",
-        "price": "0.001",
-        "type": "constant"
-      }
-    },
-    "default": "gateway",
-    "description": "Free - $0.001 / message",
-    "price": "0.001",
-    "type": "channel"
+    "description": "Free",
+    "price": "0",
+    "type": "constant"
   },
   "name": "labs/discord-to-msg",
   "status": "ready",
