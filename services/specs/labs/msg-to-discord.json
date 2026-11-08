@@ -3,43 +3,97 @@
     "channel_name": "msg-to-discord",
     "code_example_preset": "msg_to_apprise_code_example_py",
     "connectivity_preset": "msg_to_apprise_connectivity",
-    "description": "`msg-to-discord` accepts an HTTP POST carrying the unified `msg` envelope (`title`, `body`, `type`, `format`), attaches the credentials in your stored secrets, and delivers the message to your Discord channel — so you run no messaging infrastructure of your own.\n\nDelivery goes out through a native gateway transformation that posts straight to your own Discord channels — free, and driven entirely by the credentials you have stored. Paid variants ($0.001 / message) deliver to additional Discord channels bound per enrollment.\n\nIn Discord, open the target channel's Settings (gear icon) → Integrations → Webhooks, and click New Webhook (or select an existing one). Discord gives you a URL shaped like https://discord.com/api/webhooks/<WEBHOOK_ID>/<WEBHOOK_TOKEN> — paste the whole URL into the DISCORD_WEBHOOK_URL secret.",
+    "description": "Send plain Discord messages from the unified `msg` envelope, with the title as the sender name and an optional profile picture.\n\nThe gateway posts directly to your Discord webhook: `body` becomes ordinary message content, `title` becomes the username, and an HTTPS `avatar_url` overrides the webhook avatar. Links fold into the content. Long names and content are truncated to 80 and 2000 characters; names containing Discord-reserved words fall back to the webhook name.\n\nCreate a webhook under Discord channel Settings → Integrations → Webhooks and save its full URL in DISCORD_WEBHOOK_URL for the free gateway channel. Use gateway-plus for an additional destination selected by the enrollment's webhook_url_secret parameter. See How to use this service for examples and limits.",
     "display_name": "Discord Messages",
-    "gateway_code_example_preset": "msg_to_channel_code_example_py_discord",
-    "gateway_connectivity_preset": "msg_to_channel_connectivity_discord",
+    "gateway_documents": {
+      "Connectivity test": {
+        "category": "connectivity_test",
+        "file_path": "connectivity.sh.j2",
+        "is_active": true,
+        "is_public": false,
+        "meta": {
+          "channels": [
+            "gateway"
+          ],
+          "output_contains": "connectivity ok"
+        },
+        "mime_type": "bash"
+      },
+      "Connectivity test (plus)": {
+        "category": "connectivity_test",
+        "file_path": "connectivity.sh.j2",
+        "is_active": true,
+        "is_public": false,
+        "meta": {
+          "channels": [
+            "gateway-plus"
+          ],
+          "expected_charge": {
+            "amount": "0.001",
+            "tolerance": "0"
+          },
+          "output_contains": "connectivity ok"
+        },
+        "mime_type": "bash"
+      },
+      "Curl code example": {
+        "category": "code_example",
+        "file_path": "code-example.sh.j2",
+        "is_active": true,
+        "is_public": true,
+        "meta": {
+          "channels": [
+            "gateway"
+          ]
+        },
+        "mime_type": "bash"
+      },
+      "How to use this service": {
+        "category": "getting_started",
+        "file_path": "usage.md",
+        "is_active": true,
+        "is_public": true,
+        "mime_type": "markdown"
+      },
+      "Python code example": {
+        "category": "code_example",
+        "file_path": "code-example.py.j2",
+        "is_active": true,
+        "is_public": true,
+        "meta": {
+          "channels": [
+            "gateway"
+          ]
+        },
+        "mime_type": "python"
+      }
+    },
     "gateway_field_mapping": {
-      "embeds": [
-        {
-          "color": {
-            "@map": "@msg.type",
-            "default": 3447003,
-            "values": {
-              "failure": 15158332,
-              "info": 3447003,
-              "success": 3066993,
-              "warning": 16776960
-            }
-          },
-          "description": "@msg.body",
-          "image": {
-            "url": "@msg.image_url"
-          },
-          "title": "@msg.title",
-          "url": "@msg.link"
-        }
-      ]
+      "avatar_url": "@msg.avatar_url",
+      "content": "@msg.body",
+      "username": "@msg.title"
     },
     "gateway_test_local_url": "https://mock.unitysvc.dev/discord/api/webhooks/demo/demotoken",
     "gateway_url": "${ customer_secrets.DISCORD_WEBHOOK_URL }",
     "gateway_url_plus": "${ customer_secrets.{{ params.webhook_url_secret }} }",
     "logo": "https://cdn.simpleicons.org/discord/5865F2",
     "msg_capabilities": {
+      "exclude": {
+        "title": [
+          "discord",
+          "clyde"
+        ]
+      },
       "formats": [
         "markdown",
         "text"
       ],
-      "images": 1,
-      "links": 1,
+      "images": 0,
+      "limits": {
+        "body": 2000,
+        "title": 80
+      },
+      "links": 0,
       "title": true
     },
     "ops_testing_parameters": {
@@ -63,5 +117,5 @@
       "type": "object"
     }
   },
-  "template": "msg-to-channel"
+  "template": "msg-to-discord"
 }

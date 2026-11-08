@@ -6,10 +6,17 @@
 {%- if transformer_channel_exists | default(false) %}
     {#- The apprise channels are disabled on transformer services, so their
         docs would describe an unreachable path. Ship the gateway ones only. -#}
+    {%- if gateway_documents is defined %}
+    {#- Service-specific probes/examples may evolve independently of presets. -#}
+    {%- for label, document in gateway_documents.items() %}
+    {{ label | tojson }}: {{ document | tojson }}{{ ',' if not loop.last }}
+    {%- endfor %}
+    {%- else %}
     "Connectivity test": { "$doc_preset": { "name": "{{ gateway_connectivity_preset }}", "local_url": {{ gateway_test_local_url | tojson }}, "channel": "gateway", "meta": { "channels": ["gateway"] } } },
     "Connectivity test (plus)": { "$doc_preset": { "name": "{{ gateway_connectivity_preset }}", "local_url": {{ gateway_test_local_url | tojson }}, "channel": "gateway-plus", "meta": { "channels": ["gateway-plus"], "expected_charge": { "amount": "{{ plus_price | default('0.001') }}", "tolerance": "0" } } } },
     "Python code example": { "$doc_preset": { "name": "{{ gateway_code_example_preset }}", "local_url": {{ gateway_test_local_url | tojson }}, "channel": "gateway", "meta": { "channels": ["gateway"] } } },
     "Curl code example": { "$doc_preset": { "name": "{{ gateway_code_example_preset | replace('_code_example_py', '_code_example_sh') }}", "local_url": {{ gateway_test_local_url | tojson }}, "channel": "gateway", "meta": { "channels": ["gateway"] } } }
+    {%- endif %}
 {%- else %}
     "Connectivity test": {
       "$doc_preset": {
