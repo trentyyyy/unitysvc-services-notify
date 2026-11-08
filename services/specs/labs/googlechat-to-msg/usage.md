@@ -22,11 +22,11 @@ Everything else in the event (`space`, `user`, `eventTime`, `message.text`, anno
 You need a Google Workspace account (Business or Enterprise) whose admin allows users to install Chat apps.
 
 1. **Pick the connector the messages come in through.** In UnitySVC open Rooms → the room → Delivery. Add a connector for Google Chat (or use `main`) and choose **Google Chat to Messages** as its inbound service. The connector then shows its webhook URL: `https://api.svcpass.com/webhook/<KEY>/labs/googlechat-to-msg/<connector id>`.
-2. **Create the Chat app.** In the Google Cloud console, create or pick a project and enable the **Google Chat API**. Open Google Chat API → **Configuration**: give the app a name, avatar URL and description; under Interactive features turn on **Join spaces and group conversations**; under Connection settings choose **HTTP endpoint URL** and paste the connector's webhook URL; under Visibility add yourself (or your domain). Save.
+2. **Create the Chat app.** In the Google Cloud console, create or pick a project and enable the **Google Chat API**. Open Google Chat API → **Configuration**: leave **Build this Chat app as a Workspace add-on** ticked (the default; this service reads the add-on event, and clearing it cannot be undone); give the app a name, avatar URL and description; under Interactive features turn on **Join spaces and group conversations**; under Connection settings choose **HTTP endpoint URL** and paste the connector's webhook URL; under Visibility add yourself (or your domain). Save.
 3. **Talk to it.** In Google Chat, open a direct message with the app, or add it to a space and @mention it. The message appears in the room, attributed to the Google Chat author.
 4. **Send the room back to the space (optional).** Create an incoming webhook in the space, store its URL as `GOOGLECHAT_WEBHOOK_URL`, and set the same connector's notify to `labs/msg-to-googlechat`.
 
-Several spaces into several rooms: one connector per space, each with its own URL, all pointing at one Chat app or one app each.
+Several spaces into several rooms: one connector and one Chat app per space, since a Chat app has one endpoint URL.
 
 ## How the URL works
 
