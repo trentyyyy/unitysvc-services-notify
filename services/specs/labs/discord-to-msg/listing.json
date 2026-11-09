@@ -8,11 +8,35 @@
       "file_path": "connectivity.sh.j2",
       "is_active": true,
       "is_public": false,
+      "meta": {
+        "channels": [
+          "gateway"
+        ],
+        "output_contains": "connectivity ok"
+      },
+      "mime_type": "bash"
+    },
+    "Connectivity test (plus)": {
+      "category": "connectivity_test",
+      "description": "The same check through the gateway-plus channel (an enrollment naming the webhook URL secret)",
+      "file_path": "connectivity.sh.j2",
+      "is_active": true,
+      "is_public": false,
+      "meta": {
+        "channels": [
+          "gateway-plus"
+        ],
+        "expected_charge": {
+          "amount": "0.001",
+          "tolerance": "0"
+        },
+        "output_contains": "connectivity ok"
+      },
       "mime_type": "bash"
     },
     "How to use this service": {
       "category": "getting_started",
-      "description": "Set up WebhookBridge, store your room connector URL, and what the room receives",
+      "description": "Set up WebhookBridge, preserve room connector markers for backend echo refusal, and understand inbound attachments",
       "file_path": "usage.md",
       "is_active": true,
       "is_public": true,
@@ -24,13 +48,31 @@
       "file_path": "code-example.sh.j2",
       "is_active": true,
       "is_public": true,
+      "meta": {
+        "channels": [
+          "gateway"
+        ]
+      },
       "mime_type": "bash"
     }
   },
   "list_price": {
-    "description": "Free",
-    "price": "0",
-    "type": "constant"
+    "channels": {
+      "gateway": {
+        "description": "Free — drops echoes of DISCORD_WEBHOOK_URL",
+        "price": "0",
+        "type": "constant"
+      },
+      "gateway-plus": {
+        "description": "$0.001 / message — drops echoes of the webhook URL secret the enrollment names",
+        "price": "0.001",
+        "type": "constant"
+      }
+    },
+    "default": "gateway",
+    "description": "Free - $0.001 / message",
+    "price": "0.001",
+    "type": "channel"
   },
   "name": "labs/discord-to-msg",
   "status": "ready",

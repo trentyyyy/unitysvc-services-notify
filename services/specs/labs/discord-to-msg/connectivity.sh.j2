@@ -11,6 +11,10 @@
 #                   auth) and expect 2xx (202 Accepted — the message is
 #                   posted). With no connector id in the URL it lands in the
 #                   caller's own `me` room, so the test needs no setup.
+#                   Then POST the echo of our own webhook's post (user_id =
+#                   the id in DISCORD_WEBHOOK_URL, "demo" in seller.secrets.txt,
+#                   which the test customer resolves from the seller store) and expect
+#                   the gateway's own 204 from the own-webhook-echo rule.
 set -o pipefail
 
 {% if local_testing %}
@@ -27,8 +31,24 @@ status=$(curl -sS --max-time 15 \
     "$URL" 2>/dev/null)
 
 case "$status" in
-  2??) echo "connectivity ok (HTTP $status)"; exit 0 ;;
+  2??) echo "delivery ok (HTTP $status)" ;;
   000) echo "connectivity failed: could not connect to $URL" >&2; exit 1 ;;
   *)   echo "connectivity failed: HTTP $status from $URL" >&2; exit 1 ;;
 esac
+
+# The echo of our own outbound webhook post: answered by the gateway, never posted.
+headers=$(curl -sS --max-time 15 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d "{\"event_type\":\"discord.message.created\",\"guild_id\":\"1\",\"channel_id\":\"2\",\"message_id\":\"$MARKER-echo\",\"user_id\":\"demo\",\"username\":\"Bo Peng - Test Room\",\"display_name\":\"Bo Peng - Test Room\",\"message\":\"echo probe\",\"attachments\":[],\"timestamp\":\"2026-11-05T00:00:00.000Z\"}" \
+    -o /dev/null -D - \
+    "$URL" 2>/dev/null)
+echo_status=$(printf '%s' "$headers" | awk 'NR==1 {print $2}')
+if [ "$echo_status" = "204" ] && printf '%s' "$headers" | grep -qi '^x-unitysvc-rule: own-webhook-echo'; then
+  echo "connectivity ok (echo answered 204 by the own-webhook-echo rule)"
+  exit 0
+fi
+echo "connectivity failed: the echo of our own webhook was not answered by the rule (HTTP $echo_status)" >&2
+exit 1
 {% endif %}

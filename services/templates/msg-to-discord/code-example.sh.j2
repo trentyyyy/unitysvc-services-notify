@@ -1,0 +1,17 @@
+#!/bin/bash
+# The local probe sends Discord-native content; the gateway probe sends msg.
+set -euo pipefail
+{% if local_testing %}
+URL="https://mock.unitysvc.dev/discord/api/webhooks/demo/demotoken"
+HEADERS=(-H "Content-Type: application/json")
+BODY='{"username":"Example sender - Example room","avatar_url":"https://avatars.githubusercontent.com/u/280703328","content":"Hello from UnitySVC!","embeds":[{"image":{"url":"https://avatars.githubusercontent.com/u/280703328"}}]}'
+{% else %}
+URL="{{ service_base_url }}"
+HEADERS=(-H "Content-Type: application/json" -H "Authorization: Bearer ${UNITYSVC_API_KEY}")
+BODY='{"title":"Example sender - Example room","avatar_url":"https://avatars.githubusercontent.com/u/280703328","body":"Hello from UnitySVC!","format":"text","attachment":[{"url":"https://avatars.githubusercontent.com/u/280703328","filename":"unitysvc-labs.png","type":"image/png"}]}'
+{% endif %}
+status=$(curl -sS --max-time 15 -X POST "${HEADERS[@]}" -d "$BODY" -o /dev/null -w '%{http_code}' "$URL")
+case "$status" in
+  2??) echo "sent (HTTP $status)" ;;
+  *) echo "send failed (HTTP $status)" >&2; exit 1 ;;
+esac

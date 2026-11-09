@@ -2,7 +2,7 @@
   "capabilities": [
     "receive-message"
   ],
-  "description": "`discord-to-msg` accepts the messages the WebhookBridge Discord bot forwards from a Discord channel and converts each into UnitySVC's native `msg` format, posted into one of your rooms.\n\nWebhookBridge watches a Discord channel and forwards each new message as JSON (`message`, `display_name`, `message_id`, `attachments`, …). The service maps that event onto the `msg` fields a room takes — the text as `body` (Discord markdown kept as `markdown`), the attachment URLs, and an `origin` of `discord` carrying the Discord message id and the author's display name — and posts it into the room as the member of the connector it came in through, attributed to that connector. The message id doubles as the idempotency key, so a redelivered event is not posted twice. Free.\n\nIn UnitySVC open Rooms → the room → Delivery, add a connector for the Discord channel (or use `main`) and choose Discord to Messages as its inbound service; give WebhookBridge the URL the connector shows as the channel's destination. Several Discord channels into several rooms are several connectors. No secrets and no enrollment to set up. See “How to use this service” for the walkthrough.",
+  "description": "`discord-to-msg` accepts the messages the WebhookBridge Discord bot forwards from a Discord channel and converts each into UnitySVC's native `msg` format, posted into one of your rooms.\n\nWebhookBridge watches a Discord channel and forwards each new message as JSON (`message`, `display_name`, `message_id`, `attachments`, …). The service maps that event onto the `msg` fields a room takes — the text as `body` (Discord markdown kept as `markdown`), the attachment URLs, and an `origin` of `discord` carrying the Discord message id and the author's display name — and posts it into the room as the member of the connector it came in through, attributed to that connector. The message id doubles as the idempotency key, so a redelivered event is not posted twice. When the room also sends to that Discord channel through msg-to-discord, WebhookBridge forwards those posts back as new events; the gateway answers such an echo (its user_id is the id in your DISCORD_WEBHOOK_URL) with 204 before anything is posted. The free gateway channel checks the DISCORD_WEBHOOK_URL secret; gateway-plus ($0.001 / message) checks the webhook URL secret the enrollment's webhook_url_secret parameter names, for a room that sends through msg-to-discord's gateway-plus.\n\nIn UnitySVC open Rooms → the room → Delivery, add a connector for the Discord channel (or use `main`) and choose Discord to Messages as its inbound service; give WebhookBridge the URL the connector shows as the channel's destination. Several Discord channels into several rooms are several connectors. No enrollment to set up; the DISCORD_WEBHOOK_URL you already set for msg-to-discord also stops your own outbound messages coming back. See “How to use this service” for the walkthrough.",
   "details": {
     "input_formats": [
       "x-webhookbridge-discord"
@@ -25,6 +25,15 @@
       "access_method": "http",
       "base_url": "rooms://post",
       "payload_format": "msg",
+      "request_rules": [
+        {
+          "name": "own-webhook-echo",
+          "respond": {
+            "status": 204
+          },
+          "when": "string.find(\"${ customer_secrets.DISCORD_WEBHOOK_URL ?? none }\", table.concat({\"/webhooks/\", body.user_id, \"/\"}), 1, true) ~= nil"
+        }
+      ],
       "request_transformer": {
         "msg_transformer": {
           "capabilities": {
@@ -50,6 +59,62 @@
         }
       },
       "sort_order": 1
+    },
+    "gateway-plus": {
+      "access_method": "http",
+      "base_url": "rooms://post",
+      "params": {
+        "schema": {
+          "properties": {
+            "webhook_url_secret": {
+              "description": "Name of the customer secret holding the Discord webhook URL this enrollment's room posts to through msg-to-discord; its echoes are dropped",
+              "type": "string"
+            }
+          },
+          "required": [
+            "webhook_url_secret"
+          ],
+          "type": "object"
+        },
+        "testing_defaults": {
+          "webhook_url_secret": "DISCORD_WEBHOOK_URL"
+        }
+      },
+      "payload_format": "msg",
+      "request_rules": [
+        {
+          "name": "own-webhook-echo",
+          "respond": {
+            "status": 204
+          },
+          "when": "string.find(\"${ customer_secrets.{{ params.webhook_url_secret }} }\", table.concat({\"/webhooks/\", body.user_id, \"/\"}), 1, true) ~= nil"
+        }
+      ],
+      "request_transformer": {
+        "msg_transformer": {
+          "capabilities": {
+            "formats": [
+              "markdown",
+              "text"
+            ],
+            "images": 0,
+            "links": 10,
+            "title": true
+          },
+          "field_mapping": {
+            "attachments": "@msg.attachment",
+            "body": "@msg.body",
+            "format": "markdown",
+            "origin": {
+              "author": "@in.display_name",
+              "external_id": "@in.message_id",
+              "service": "discord"
+            },
+            "type": "@msg.type"
+          }
+        }
+      },
+      "sort_order": 2
     }
   }
 }

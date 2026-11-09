@@ -1,0 +1,24 @@
+import os
+import httpx
+
+{% if local_testing %}
+# Native Discord payload: no gateway transformation in local/upstream tests.
+url = "https://mock.unitysvc.dev/discord/api/webhooks/demo/demotoken"
+headers = {}
+payload = {"username": "Example sender - Example room", "content": "Hello from UnitySVC!", "avatar_url": "https://avatars.githubusercontent.com/u/280703328", "embeds": [{"image": {"url": "https://avatars.githubusercontent.com/u/280703328"}}]}
+{% else %}
+url = "{{ service_base_url }}"
+headers = {"Authorization": f"Bearer {os.environ['UNITYSVC_API_KEY']}"}
+payload = {
+    "title": "Example sender - Example room",
+    "body": "Hello from UnitySVC!",
+    "format": "text",
+    "links": ["https://unitysvc.com"],
+    "attachment": [{"url": "https://avatars.githubusercontent.com/u/280703328", "filename": "unitysvc-labs.png", "type": "image/png"}],
+    # Optional sample: the UnitySVC Labs logo. Use your HTTPS image or omit it.
+    "avatar_url": "https://avatars.githubusercontent.com/u/280703328",
+}
+{% endif %}
+response = httpx.post(url, headers=headers, json=payload, timeout=15)
+response.raise_for_status()
+print(f"sent (HTTP {response.status_code})")

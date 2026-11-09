@@ -1,0 +1,115 @@
+{%- set discord_body %}{% include "discord-body.base64" %}{% endset -%}
+{#- Apprise relay (#2650): apprise-api converts the format and uploads the
+    attachments per plugin itself, so the relay declares every format and no
+    links — the gateway folds links into the body and passes `format` and the
+    validated `attachment` list through. -#}
+{%- set apprise_caps = {"formats": ["markdown", "html", "text"], "images": 0, "links": 0, "title": true} -%}
+{%- set apprise_fields = {"attachment": "@msg.attachment", "body": "@msg.body", "format": "@msg.format", "title": "@msg.title", "type": "@msg.type"} -%}
+{#- Enrollment parameters live on the channel that reads them
+    (unitysvc/unitysvc#2726). Only the plus channel (`gateway-plus` or
+    `apprise-plus`) reads `{{ params.* }}`, so it carries the param file's
+    schema and test values; the free channel declares none. -#}
+{%- set plus_params = {"schema": user_parameters_schema, "testing_defaults": ops_testing_parameters} %}
+{
+  "capabilities": [
+    "deliver-message"
+  ],
+  "description": {{ description | tojson }},
+  "details": {
+    "input_formats": ["msg"]{% if msg_capabilities is defined or not (transformer_channel_exists | default(false)) %},
+    {#- What the channel can carry of the `msg` envelope (#2650). The same
+        declaration drives the gateway normalizer below. -#}
+    "msg_capabilities": {{ (msg_capabilities if msg_capabilities is defined else apprise_caps) | tojson }}{% endif %}
+  },{% if logo %}
+  "logo": {{ logo | tojson }},{% endif %}
+  "name": "{{ channel_name }}",
+  "service_type": "notification",
+  "status": "{{ status | default('ready') }}",
+  "summary": {{ summary | tojson }},
+  {#- Every service here is tested only against mock upstreams (mock.unitysvc.dev).
+      The condition (unitysvc/unitysvc#2637) keeps the badge visible only until
+      the first real successful request reaches the catalog stats. A param
+      file may override `tags` once a channel is verified some other way. -#}
+  "tags": {{ tags | default(["warning:unverified?stats.successful_requests==0 | Tested against a simulated upstream only — no customer has used it yet"]) | tojson }},
+  "time_created": "{{ time_created | default('2026-06-19T00:00:00Z') }}",
+  "upstream_access_config": {
+{%- if transformer_channel_exists | default(false) %}
+    {#- A native `gateway` channel delivers straight to the provider's own
+        API, so an Apprise-relay fallback is redundant here — and it is a
+        path we cannot exercise end-to-end against the real destination.
+        Apprise-only services (no transformer) are the ones that define
+        `apprise`/`apprise-plus` below; transformer services skip them
+        entirely rather than carry disabled dead channels. -#}
+    "gateway": {
+      "access_method": "http",
+      {%- if gateway_api_key is defined %}
+      "api_key": {{ gateway_api_key | tojson }},
+      {%- endif %}
+      "sort_order": 1,
+      "base_url": {{ gateway_url | tojson }},
+      "request_transformer": {
+        {#- A channel that declares msg_capabilities runs the gateway's
+            msg_transformer first (#2650): with gateway_field_mapping it builds
+            the upstream body from the normalized msg; without one, the
+            body_transformer template reads the normalized msg as `_body`. -#}
+        {%- if msg_capabilities is defined %}
+        "msg_transformer": { "capabilities": {{ msg_capabilities | tojson }}{% if gateway_field_mapping is defined %}, "field_mapping": {{ gateway_field_mapping | tojson }}{% if gateway_output_format is defined %}, "output_format": {{ gateway_output_format | tojson }}{% endif %}{% endif %} },
+        {%- endif %}
+        {%- if gateway_field_mapping is not defined %}
+        "body_transformer": { "request": { "input_format": "json", "template": {{ gateway_body_template | tojson }} } },
+        {%- endif %}
+        "body_transformer": { "request": { "input_format": "json", "template_is_base64": true, "template": {{ discord_body | trim | tojson }} } },
+        "proxy_rewrite": { "headers": { "set": { "Content-Type": {{ gateway_content_type | default('application/json') | tojson }}{% if gateway_extra_headers is defined %}{% for hk, hv in gateway_extra_headers.items() %}, {{ hk | tojson }}: {{ hv | tojson }}{% endfor %}{% endif %} } } }
+      }
+    },
+    {#- The plus channel reaches the enrollment's own destination: every value
+        that names a customer secret has a `_plus` variant reading it through
+        `${ customer_secrets.{{ params.NAME }} }`, defaulting to the free one
+        when the value names no secret. -#}
+    "gateway-plus": {
+      "access_method": "http",
+      {%- set _plus_api_key = gateway_api_key_plus | default(gateway_api_key) %}
+      {%- if _plus_api_key is defined %}
+      "api_key": {{ _plus_api_key | tojson }},
+      {%- endif %}
+      "sort_order": 3,
+      "base_url": {{ gateway_url_plus | tojson }},
+      "params": {{ plus_params | tojson }},
+      "request_transformer": {
+        {%- if msg_capabilities is defined %}
+        "msg_transformer": { "capabilities": {{ msg_capabilities | tojson }}{% if gateway_field_mapping is defined %}, "field_mapping": {{ (gateway_field_mapping_plus | default(gateway_field_mapping)) | tojson }}{% if gateway_output_format is defined %}, "output_format": {{ gateway_output_format | tojson }}{% endif %}{% endif %} },
+        {%- endif %}
+        {%- if gateway_field_mapping is not defined %}
+        "body_transformer": { "request": { "input_format": "json", "template": {{ (gateway_body_template_plus | default(gateway_body_template)) | tojson }} } },
+        {%- endif %}
+        "body_transformer": { "request": { "input_format": "json", "template_is_base64": true, "template": {{ discord_body | trim | tojson }} } },
+        "proxy_rewrite": { "headers": { "set": { "Content-Type": {{ gateway_content_type | default('application/json') | tojson }}{% set _plus_headers = gateway_extra_headers_plus | default(gateway_extra_headers) %}{% if _plus_headers is defined %}{% for hk, hv in _plus_headers.items() %}, {{ hk | tojson }}: {{ hv | tojson }}{% endfor %}{% endif %} } } }
+      }
+    }
+{%- else %}
+    "apprise": {
+      "access_method": "http",
+      "sort_order": 2,
+      "base_url": "${ customer_secrets._APPRISE_BASE ?? https://apprise.unitysvc.dev }/notify",
+      "request_transformer": {
+        "msg_transformer": {
+          "capabilities": {{ apprise_caps | tojson }},
+          "field_mapping": {{ dict(apprise_fields, urls=apprise_url) | tojson }}
+        }
+      }
+    },
+    "apprise-plus": {
+      "access_method": "http",
+      "sort_order": 4,
+      "base_url": "${ customer_secrets._APPRISE_BASE ?? https://apprise.unitysvc.dev }/notify",
+      "params": {{ plus_params | tojson }},
+      "request_transformer": {
+        "msg_transformer": {
+          "capabilities": {{ apprise_caps | tojson }},
+          "field_mapping": {{ dict(apprise_fields, urls=apprise_url_plus) | tojson }}
+        }
+      }
+    }
+{%- endif %}
+  }
+}
