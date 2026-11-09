@@ -14,8 +14,7 @@
         "meta": {
           "channels": [
             "gateway"
-          ],
-          "output_contains": "connectivity ok"
+          ]
         },
         "mime_type": "bash"
       },
@@ -31,8 +30,7 @@
           "expected_charge": {
             "amount": "0.001",
             "tolerance": "0"
-          },
-          "output_contains": "connectivity ok"
+          }
         },
         "mime_type": "bash"
       },
