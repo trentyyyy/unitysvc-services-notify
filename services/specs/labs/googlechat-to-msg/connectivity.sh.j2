@@ -1,0 +1,22 @@
+#!/bin/bash
+set -o pipefail
+
+{% if local_testing %}
+echo "connectivity ok (gateway-native rooms://post, no upstream)"
+{% else %}
+MARKER="connectivity-$(date +%s)-$RANDOM"
+URL="{{ service_base_url }}"
+status=$(curl -sS --max-time 15 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d "{\"hostApp\":\"chat\",\"commonEventObject\":{\"hostApp\":\"CHAT\",\"platform\":\"WEB\"},\"chat\":{\"eventTime\":\"2026-11-08T00:00:00.000000Z\",\"user\":{\"name\":\"users/1\",\"displayName\":\"Example User\",\"type\":\"HUMAN\"},\"messagePayload\":{\"space\":{\"name\":\"spaces/AAAAexample\",\"spaceType\":\"SPACE\"},\"message\":{\"name\":\"spaces/AAAAexample/messages/$MARKER\",\"sender\":{\"name\":\"users/1\",\"displayName\":\"Example User\",\"type\":\"HUMAN\"},\"text\":\"@UnitySVC connectivity probe\",\"argumentText\":\" connectivity probe\"}}}}" \
+    -o /dev/null -w "%{http_code}" \
+    "$URL" 2>/dev/null)
+
+case "$status" in
+  2??) echo "connectivity ok (HTTP $status)"; exit 0 ;;
+  000) echo "connectivity failed: could not connect to $URL" >&2; exit 1 ;;
+  *)   echo "connectivity failed: HTTP $status from $URL" >&2; exit 1 ;;
+esac
+{% endif %}

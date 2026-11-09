@@ -56,6 +56,7 @@ ALLOWED_UNBOUND = {
     # Gateway-native upstream (rooms://post): the room comes from the connector
     # id in the URL and the credential is the key, so there is no secret to set.
     "discord-to-msg@gateway",
+    "googlechat-to-msg@gateway",
 }
 
 REF = re.compile(

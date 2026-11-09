@@ -1,0 +1,22 @@
+#!/bin/bash
+set -o pipefail
+
+{% if local_testing %}
+echo "delivered (skipped: gateway-native rooms://post, no upstream)"
+exit 0
+{% else %}
+URL="{{ service_base_url }}"
+status=$(curl -sS --max-time 15 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d '{"hostApp":"chat","commonEventObject":{"hostApp":"CHAT","platform":"WEB"},"chat":{"eventTime":"2026-11-08T12:00:00.000000Z","user":{"name":"users/123456789","displayName":"Example User","type":"HUMAN"},"messagePayload":{"space":{"name":"spaces/AAAAexample","spaceType":"SPACE","displayName":"Team"},"message":{"name":"spaces/AAAAexample/messages/abc.abc","sender":{"name":"users/123456789","displayName":"Example User","type":"HUMAN"},"text":"@UnitySVC Hello from Google Chat","argumentText":" Hello from Google Chat","createTime":"2026-11-08T12:00:00.000000Z"}}}}' \
+    -o /dev/null -w "%{http_code}" \
+    "$URL" 2>/dev/null)
+
+case "$status" in
+  2??) echo "delivered (HTTP $status)"; exit 0 ;;
+  000) echo "send failed: could not connect to $URL" >&2; exit 1 ;;
+  *)   echo "send failed: HTTP $status from $URL" >&2; exit 1 ;;
+esac
+{% endif %}
