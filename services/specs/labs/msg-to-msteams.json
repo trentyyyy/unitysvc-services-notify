@@ -3,7 +3,7 @@
     "channel_name": "msg-to-msteams",
     "code_example_preset": "msg_to_apprise_code_example_py",
     "connectivity_preset": "msg_to_apprise_connectivity",
-    "description": "`msg-to-msteams` accepts an HTTP POST carrying the unified `msg` envelope (`title`, `body`, `type`, `format`), attaches the credentials in your stored secrets, and delivers the message to your Microsoft Teams channel — so you run no messaging infrastructure of your own.\n\nDelivery goes out through a native gateway transformation that posts straight to your own Microsoft Teams channels — free, and driven entirely by the credentials you have stored. Paid variants ($0.001 / message) deliver to additional Microsoft Teams channels bound per enrollment.\n\nIn Microsoft Teams, open the channel you want to notify, select ••• (More options) from the channel header, and add an Incoming Webhook connector (give it a name and optionally an icon). Teams generates a URL shaped like https://outlook.office.com/webhookb2/<path> — copy everything after /webhookb2/ into your secret; UnitySVC assembles the rest of the request for you.",
+    "description": "`msg-to-msteams` accepts an HTTP POST carrying the unified `msg` envelope (`title`, `body`, `type`, `format`), attaches the credentials in your stored secrets, and delivers the message to your Microsoft Teams channel — so you run no messaging infrastructure of your own.\n\nDelivery goes out through a native gateway transformation that posts straight to your own Microsoft Teams channels — free, and driven entirely by the credentials you have stored. Paid variants ($0.001 / message) deliver to additional Microsoft Teams channels bound per enrollment.\n\nIn Microsoft Teams, open the channel you want to notify, select ••• (More options) → Workflows, and pick the \"Send webhook alerts to a channel\" template (choose the team and channel, then add the workflow). Teams shows the workflow's webhook URL — store the whole URL as your MSTEAMS_WEBHOOK_URL secret; UnitySVC assembles the rest of the request for you. (Teams retired Office 365 Connectors, including the old Incoming Webhook, in May 2026.)",
     "display_name": "Microsoft Teams Messages",
     "gateway_code_example_preset": "msg_to_channel_code_example_py_msteams",
     "gateway_connectivity_preset": "msg_to_channel_connectivity_msteams",
@@ -15,10 +15,10 @@
       "title": "@msg.title"
     },
     "gateway_plus_price_description": "$0.001 per message — extra per-enrollment Microsoft Teams destinations, direct",
-    "gateway_price_description": "Free — direct to your Microsoft Teams incoming webhook",
+    "gateway_price_description": "Free — direct to your Microsoft Teams Workflows webhook",
     "gateway_test_local_url": "https://mock.unitysvc.dev/msteams/webhookb2/demo",
-    "gateway_url": "${ customer_secrets._MSTEAMS_WEBHOOK_HOST ?? https://outlook.office.com }/webhookb2/${ customer_secrets.MSTEAMS_WEBHOOK_PATH }",
-    "gateway_url_plus": "${ customer_secrets._MSTEAMS_WEBHOOK_HOST ?? https://outlook.office.com }/webhookb2/${ customer_secrets.{{ params.webhook_path_secret }} }",
+    "gateway_url": "${ customer_secrets.MSTEAMS_WEBHOOK_URL }",
+    "gateway_url_plus": "${ customer_secrets.{{ params.webhook_url_secret }} }",
     "logo": "https://api.iconify.design/logos:microsoft-teams.svg",
     "msg_capabilities": {
       "formats": [
@@ -31,7 +31,7 @@
     },
     "ops_testing_parameters": {
       "base_url": "https://mock.unitysvc.dev/apprise/notify",
-      "webhook_path_secret": "MSTEAMS_WEBHOOK_PATH"
+      "webhook_url_secret": "MSTEAMS_WEBHOOK_URL"
     },
     "summary": "Send a notification to your own Microsoft Teams channel by posting a simple `msg` request to the UnitySVC gateway.",
     "test_apprise_url": "workflows://hostname.example.com/workflowid/AbCdEfGhSignature",
@@ -39,13 +39,13 @@
     "transformer_channel_exists": true,
     "user_parameters_schema": {
       "properties": {
-        "webhook_path_secret": {
-          "description": "Name of the customer secret holding this enrollment's Microsoft Teams incoming-webhook path (the opaque segment after /webhookb2/); used by the gateway-plus transformer channel",
+        "webhook_url_secret": {
+          "description": "Name of the customer secret holding this enrollment's Microsoft Teams Workflows webhook URL (the whole URL Teams shows for the workflow); used by the gateway-plus transformer channel",
           "type": "string"
         }
       },
       "required": [
-        "webhook_path_secret"
+        "webhook_url_secret"
       ],
       "type": "object"
     }
