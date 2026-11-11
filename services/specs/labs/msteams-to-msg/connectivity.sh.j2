@@ -1,0 +1,28 @@
+#!/bin/bash
+set -o pipefail
+
+{% if local_testing %}
+echo "connectivity ok (gateway-native rooms://post, no upstream)"
+{% else %}
+ACTIVITY_ID="$(date +%s)$RANDOM"
+URL="{{ service_base_url }}"
+out=$(curl -sS --max-time 15 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d "{\"type\":\"message\",\"id\":\"$ACTIVITY_ID\",\"channelId\":\"msteams\",\"from\":{\"id\":\"29:1example\",\"name\":\"Example User\"},\"conversation\":{\"isGroup\":true,\"conversationType\":\"channel\",\"id\":\"19:example@thread.tacv2;messageid=$ACTIVITY_ID\"},\"textFormat\":\"plain\",\"text\":\"<at>UnitySVC</at>&nbsp;connectivity probe\\n\",\"channelData\":{\"channel\":{\"id\":\"19:example@thread.tacv2\"}}}" \
+    -w "\n%{http_code}" \
+    "$URL" 2>/dev/null)
+status="${out##*$'\n'}"
+body="${out%$'\n'*}"
+
+case "$status" in
+  2??)
+    case "$body" in
+      *'"type":"message"'*) echo "connectivity ok (HTTP $status, Teams reply)"; exit 0 ;;
+      *) echo "connectivity failed: HTTP $status but not a Teams message reply: $body" >&2; exit 1 ;;
+    esac ;;
+  000) echo "connectivity failed: could not connect to $URL" >&2; exit 1 ;;
+  *)   echo "connectivity failed: HTTP $status from $URL: $body" >&2; exit 1 ;;
+esac
+{% endif %}

@@ -1,0 +1,24 @@
+#!/bin/bash
+set -o pipefail
+
+{% if local_testing %}
+echo "delivered (skipped: gateway-native rooms://post, no upstream)"
+exit 0
+{% else %}
+# What a Teams outgoing webhook sends for "@UnitySVC Hello from Teams" (trimmed).
+URL="{{ service_base_url }}"
+out=$(curl -sS --max-time 15 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d '{"type":"message","id":"1731240000000","timestamp":"2026-11-10T12:00:00.000Z","channelId":"msteams","serviceUrl":"https://smba.trafficmanager.net/amer/","from":{"id":"29:1example","name":"Example User"},"conversation":{"isGroup":true,"conversationType":"channel","id":"19:example@thread.tacv2;messageid=1731240000000"},"textFormat":"plain","text":"<at>UnitySVC</at> Hello from <b>Teams</b>\n","channelData":{"teamsChannelId":"19:example@thread.tacv2","channel":{"id":"19:example@thread.tacv2"}}}' \
+    -w "\n%{http_code}" \
+    "$URL" 2>/dev/null)
+status="${out##*$'\n'}"
+
+case "$status" in
+  2??) echo "delivered (HTTP $status): ${out%$'\n'*}"; exit 0 ;;
+  000) echo "send failed: could not connect to $URL" >&2; exit 1 ;;
+  *)   echo "send failed: HTTP $status from $URL" >&2; exit 1 ;;
+esac
+{% endif %}
