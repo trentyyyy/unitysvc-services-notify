@@ -1,0 +1,28 @@
+#!/bin/bash
+set -o pipefail
+
+{% if local_testing %}
+echo "connectivity ok (gateway-native rooms://post, no upstream)"
+{% else %}
+# A fresh update_id each run: the room drops repeats of one id.
+UPDATE_ID="$(date +%s)$RANDOM"
+URL="{{ service_base_url }}"
+out=$(curl -sS --max-time 15 -D - -o /dev/null \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d "{\"update_id\":$UPDATE_ID,\"message\":{\"message_id\":1,\"date\":1794380000,\"from\":{\"id\":100000001,\"is_bot\":false,\"first_name\":\"Example\",\"last_name\":\"User\",\"username\":\"example_user\"},\"chat\":{\"id\":-1001000000001,\"type\":\"supergroup\",\"title\":\"Example Group\"},\"text\":\"connectivity probe\"}}" \
+    -w "%{http_code}" \
+    "$URL" 2>/dev/null)
+status="${out##*$'\n'}"
+
+# A rule answer would mean the message was dropped, not posted.
+if printf '%s' "$out" | grep -qi '^x-unitysvc-rule:'; then
+  echo "connectivity failed: HTTP $status but a request rule dropped the message" >&2; exit 1
+fi
+case "$status" in
+  2??) echo "connectivity ok (HTTP $status)"; exit 0 ;;
+  000) echo "connectivity failed: could not connect to $URL" >&2; exit 1 ;;
+  *)   echo "connectivity failed: HTTP $status from $URL" >&2; exit 1 ;;
+esac
+{% endif %}

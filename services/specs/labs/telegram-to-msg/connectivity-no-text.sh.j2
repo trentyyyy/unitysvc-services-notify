@@ -1,0 +1,24 @@
+#!/bin/bash
+set -o pipefail
+
+{% if local_testing %}
+echo "connectivity ok (gateway-native rooms://post, no upstream)"
+{% else %}
+# An edited message carries no `message`: the no-text rule answers 200 and
+# posts nothing, so Telegram does not retry it.
+UPDATE_ID="$(date +%s)$RANDOM"
+URL="{{ service_base_url }}"
+out=$(curl -sS --max-time 15 -D - -o /dev/null \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d "{\"update_id\":$UPDATE_ID,\"edited_message\":{\"message_id\":1,\"date\":1794380000,\"edit_date\":1794380060,\"from\":{\"id\":100000001,\"is_bot\":false,\"first_name\":\"Example\"},\"chat\":{\"id\":-1001000000001,\"type\":\"supergroup\"},\"text\":\"edited\"}}" \
+    -w "%{http_code}" \
+    "$URL" 2>/dev/null)
+status="${out##*$'\n'}"
+
+if [ "$status" = "200" ] && printf '%s' "$out" | grep -qi '^x-unitysvc-rule: *no-text'; then
+  echo "connectivity ok (HTTP 200, dropped by the no-text rule)"; exit 0
+fi
+echo "connectivity failed: HTTP $status without the no-text rule from $URL" >&2; exit 1
+{% endif %}

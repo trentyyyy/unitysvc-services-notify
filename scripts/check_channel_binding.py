@@ -58,6 +58,7 @@ ALLOWED_UNBOUND = {
     "discord-to-msg@gateway",
     "googlechat-to-msg@gateway",
     "msteams-to-msg@gateway",
+    "telegram-to-msg@gateway",
 }
 
 REF = re.compile(

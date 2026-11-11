@@ -1,0 +1,23 @@
+#!/bin/bash
+set -o pipefail
+
+{% if local_testing %}
+echo "delivered (skipped: gateway-native rooms://post, no upstream)"
+exit 0
+{% else %}
+# What Telegram POSTs to your bot's webhook for "Hello from Telegram" in a group.
+URL="{{ service_base_url }}"
+status=$(curl -sS --max-time 15 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    -d '{"update_id":900000001,"message":{"message_id":42,"date":1794380000,"from":{"id":100000001,"is_bot":false,"first_name":"Example","last_name":"User","username":"example_user","language_code":"en"},"chat":{"id":-1001000000001,"title":"Example Group","type":"supergroup"},"text":"Hello from Telegram"}}' \
+    -o /dev/null -w "%{http_code}" \
+    "$URL" 2>/dev/null)
+
+case "$status" in
+  2??) echo "delivered (HTTP $status)"; exit 0 ;;
+  000) echo "send failed: could not connect to $URL" >&2; exit 1 ;;
+  *)   echo "send failed: HTTP $status from $URL" >&2; exit 1 ;;
+esac
+{% endif %}

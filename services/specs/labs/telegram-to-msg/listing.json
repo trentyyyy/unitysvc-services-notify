@@ -1,0 +1,52 @@
+{
+  "currency": "USD",
+  "display_name": "Telegram to Messages",
+  "documents": {
+    "Connectivity test": {
+      "category": "connectivity_test",
+      "description": "POST a Telegram text-message update through the gateway and expect 2xx",
+      "file_path": "connectivity.sh.j2",
+      "is_active": true,
+      "is_public": false,
+      "mime_type": "bash"
+    },
+    "Connectivity test (no text)": {
+      "category": "connectivity_test",
+      "description": "POST an update with no text (an edit) and expect 200 from the no-text rule, with nothing posted",
+      "file_path": "connectivity-no-text.sh.j2",
+      "is_active": true,
+      "is_public": false,
+      "mime_type": "bash"
+    },
+    "How to use this service": {
+      "category": "getting_started",
+      "description": "Create or reuse a bot, point its webhook at your room connector URL, privacy mode, and what the room receives",
+      "file_path": "usage.md",
+      "is_active": true,
+      "is_public": true,
+      "mime_type": "markdown"
+    },
+    "Shell code example": {
+      "category": "code_example",
+      "description": "Simulate a Telegram update with curl",
+      "file_path": "code-example.sh.j2",
+      "is_active": true,
+      "is_public": true,
+      "mime_type": "bash"
+    }
+  },
+  "list_price": {
+    "description": "Free",
+    "price": "0",
+    "type": "constant"
+  },
+  "name": "labs/telegram-to-msg",
+  "status": "ready",
+  "time_created": "2026-11-11T00:00:00Z",
+  "user_access_interfaces": {
+    "canonical": {
+      "access_method": "http",
+      "base_url": "${API_GATEWAY_BASE_URL}/{{ service_name }}"
+    }
+  }
+}

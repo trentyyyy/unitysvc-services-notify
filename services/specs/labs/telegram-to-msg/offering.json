@@ -1,0 +1,72 @@
+{
+  "capabilities": [
+    "receive-message"
+  ],
+  "description": "`telegram-to-msg` accepts the updates your own Telegram bot receives and converts each text message into UnitySVC's native `msg` format, posted into one of your rooms.\n\nA Telegram bot whose webhook (`setWebhook`) points at this service gets every update POSTed here by Telegram: messages in the groups it belongs to and in private chats with it. The service maps a text message onto the `msg` fields a room takes: `message.text` as a plain-text `body`, and an `origin` of `telegram` carrying the update id and the sender's first name (stored as the message's origin author). It posts the result into the room as the member of the connector it came in through, attributed to that connector. The update id doubles as the idempotency key, so a redelivered update is not posted twice. Updates with no text (edits, joins and leaves, photos without captions, polls, channel posts) and messages from other bots are answered 200 and posted nowhere, so Telegram does not retry them. Your bot never receives its own messages, so room messages it sends to the group through msg-to-telegram do not come back. Free.\n\nIn UnitySVC open the room → Configure → Notifications, set a connector's Inbound to “Through a converter service…” with `labs/telegram-to-msg`, then point your bot's webhook at the connector's Inbound URL with one `setWebhook` call. Create the bot with @BotFather, or reuse the one you set up for msg-to-telegram. In groups, turn the bot's privacy mode off to bridge every message. No secrets and no enrollment to set up. See “How to use this service” for the walkthrough.",
+  "details": {
+    "input_formats": [
+      "x-telegram-update"
+    ],
+    "output_formats": [
+      "msg"
+    ]
+  },
+  "logo": "https://cdn.simpleicons.org/telegram/26A5E4",
+  "name": "telegram-to-msg",
+  "service_type": "notification",
+  "status": "ready",
+  "summary": "Bring Telegram messages into a UnitySVC room: your bot's webhook posts each update here, the gateway converts it into a `msg` and delivers it through your room connector.",
+  "tags": [
+    "warning:unverified?stats.successful_requests==0 | Tested against a simulated upstream only — no customer has used it yet"
+  ],
+  "time_created": "2026-11-11T00:00:00Z",
+  "upstream_access_config": {
+    "gateway": {
+      "access_method": "http",
+      "base_url": "rooms://post",
+      "payload_format": "msg",
+      "request_rules": [
+        {
+          "name": "no-text",
+          "respond": {
+            "status": 200
+          },
+          "when": "not (body.message and body.message.text)"
+        },
+        {
+          "name": "other-bot",
+          "respond": {
+            "status": 200
+          },
+          "when": "body.message.from.is_bot == true"
+        }
+      ],
+      "request_transformer": {
+        "msg_transformer": {
+          "capabilities": {
+            "formats": [
+              "text"
+            ],
+            "images": 0,
+            "links": 10,
+            "title": true
+          },
+          "field_mapping": {
+            "body": "@in.message.text",
+            "format": "text",
+            "origin": {
+              "author": "@in.message.from.first_name",
+              "external_id": "@in.update_id|string",
+              "service": "telegram"
+            },
+            "type": "@msg.type"
+          },
+          "success_response": {
+            "status": 200
+          }
+        }
+      },
+      "sort_order": 1
+    }
+  }
+}
