@@ -1,0 +1,31 @@
+#!/bin/bash
+set -o pipefail
+
+{% if local_testing %}
+echo "delivered (skipped: gateway-native rooms://post, no upstream)"
+exit 0
+{% else %}
+# What a Slack outgoing webhook POSTs for "Hello from *Slack*" in #general.
+# SLACK_OUTGOING_TOKEN is the token Slack shows for the integration.
+URL="{{ service_base_url }}"
+status=$(curl -sS --max-time 15 \
+    -X POST \
+    -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+    --data-urlencode "token=${SLACK_OUTGOING_TOKEN:-demo-outgoing-token}" \
+    --data-urlencode "team_id=T0001" \
+    --data-urlencode "team_domain=example" \
+    --data-urlencode "channel_id=C2147483705" \
+    --data-urlencode "channel_name=general" \
+    --data-urlencode "timestamp=$(date +%s).000005" \
+    --data-urlencode "user_id=U2147483697" \
+    --data-urlencode "user_name=Steve" \
+    --data-urlencode "text=Hello from *Slack*" \
+    -o /dev/null -w "%{http_code}" \
+    "$URL" 2>/dev/null)
+
+case "$status" in
+  2??) echo "delivered (HTTP $status)"; exit 0 ;;
+  000) echo "send failed: could not connect to $URL" >&2; exit 1 ;;
+  *)   echo "send failed: HTTP $status from $URL" >&2; exit 1 ;;
+esac
+{% endif %}

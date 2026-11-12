@@ -1,0 +1,138 @@
+{
+  "capabilities": [
+    "receive-message"
+  ],
+  "description": "`slack-to-msg` accepts the messages a Slack outgoing webhook sends from a public channel and converts each into UnitySVC's native `msg` format, posted into one of your rooms.\n\nSlack's legacy Outgoing WebHooks integration POSTs a form (`token`, `text`, `user_name`, `timestamp`, …) for every message in the channel you pick, or for messages that start with a trigger word. The service checks the form's `token` against the one Slack gave you and refuses any other sender with 401. It maps the form onto the `msg` fields a room takes: `text` as the `body` (Slack mrkdwn kept as `markdown`), and an `origin` of `slack` carrying the message timestamp and the Slack user name (stored as the message's origin author). It posts the result into the room as the member of the connector it came in through, attributed to that connector, and answers Slack with an empty 200, so nothing is posted back into the channel. The timestamp doubles as the idempotency key, so a redelivered message is not posted twice. Posts Slack sends as `slackbot` or with a `bot_id` are answered 204 and posted nowhere, so what the room sends to the same channel through msg-to-slack does not come back. The free gateway channel checks the SLACK_OUTGOING_TOKEN secret; gateway-plus ($0.001 / message) checks the secret the enrollment's token_secret parameter names, for several Slack channels or workspaces.\n\nIn UnitySVC open the room → Configure → Notifications, set a connector's Inbound to “Through a converter service…” with `labs/slack-to-msg`, and paste its Inbound URL into an Outgoing WebHooks integration you add in Slack; store the token Slack shows as the SLACK_OUTGOING_TOKEN secret. Public channels only, and the workspace must allow legacy custom integrations. No enrollment to set up for one Slack channel. See “How to use this service” for the walkthrough.",
+  "details": {
+    "input_formats": [
+      "x-slack-outgoing-webhook"
+    ],
+    "output_formats": [
+      "msg"
+    ]
+  },
+  "logo": "https://api.iconify.design/logos:slack-icon.svg",
+  "name": "slack-to-msg",
+  "service_type": "notification",
+  "status": "ready",
+  "summary": "Bring Slack messages into a UnitySVC room: a Slack outgoing webhook posts each channel message here, the gateway converts it into a `msg` and delivers it through your room connector.",
+  "tags": [
+    "warning:unverified?stats.successful_requests==0 | Tested against a simulated upstream only — no customer has used it yet"
+  ],
+  "time_created": "2026-11-11T00:00:00Z",
+  "upstream_access_config": {
+    "gateway": {
+      "access_method": "http",
+      "base_url": "rooms://post",
+      "payload_format": "msg",
+      "request_rules": [
+        {
+          "name": "bad-token",
+          "respond": {
+            "status": 401
+          },
+          "when": "body.token ~= \"${ customer_secrets.SLACK_OUTGOING_TOKEN }\""
+        },
+        {
+          "name": "own-echo",
+          "respond": {
+            "status": 204
+          },
+          "when": "body.user_name == \"slackbot\" or body.bot_id ~= nil"
+        }
+      ],
+      "request_transformer": {
+        "msg_transformer": {
+          "capabilities": {
+            "formats": [
+              "markdown",
+              "text"
+            ],
+            "images": 0,
+            "links": 10,
+            "title": true
+          },
+          "field_mapping": {
+            "body": "@in.text",
+            "format": "markdown",
+            "origin": {
+              "author": "@in.user_name",
+              "external_id": "@in.timestamp",
+              "service": "slack"
+            },
+            "type": "@msg.type"
+          },
+          "success_response": {
+            "status": 200
+          }
+        }
+      },
+      "sort_order": 1
+    },
+    "gateway-plus": {
+      "access_method": "http",
+      "base_url": "rooms://post",
+      "params": {
+        "schema": {
+          "properties": {
+            "token_secret": {
+              "description": "Name of the customer secret holding the token of the Slack outgoing webhook this enrollment receives from",
+              "type": "string"
+            }
+          },
+          "required": [
+            "token_secret"
+          ],
+          "type": "object"
+        },
+        "testing_defaults": {
+          "token_secret": "SLACK_OUTGOING_TOKEN"
+        }
+      },
+      "payload_format": "msg",
+      "request_rules": [
+        {
+          "name": "bad-token",
+          "respond": {
+            "status": 401
+          },
+          "when": "body.token ~= \"${ customer_secrets.{{ params.token_secret }} }\""
+        },
+        {
+          "name": "own-echo",
+          "respond": {
+            "status": 204
+          },
+          "when": "body.user_name == \"slackbot\" or body.bot_id ~= nil"
+        }
+      ],
+      "request_transformer": {
+        "msg_transformer": {
+          "capabilities": {
+            "formats": [
+              "markdown",
+              "text"
+            ],
+            "images": 0,
+            "links": 10,
+            "title": true
+          },
+          "field_mapping": {
+            "body": "@in.text",
+            "format": "markdown",
+            "origin": {
+              "author": "@in.user_name",
+              "external_id": "@in.timestamp",
+              "service": "slack"
+            },
+            "type": "@msg.type"
+          },
+          "success_response": {
+            "status": 200
+          }
+        }
+      },
+      "sort_order": 2
+    }
+  }
+}

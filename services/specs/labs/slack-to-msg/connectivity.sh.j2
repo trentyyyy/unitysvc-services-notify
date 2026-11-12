@@ -1,0 +1,55 @@
+#!/bin/bash
+set -o pipefail
+
+{% if local_testing %}
+echo "connectivity ok (gateway-native rooms://post, no upstream)"
+{% else %}
+# The test customer resolves SLACK_OUTGOING_TOKEN from seller.secrets.txt.
+TOKEN="${SLACK_OUTGOING_TOKEN:-demo-outgoing-token}"
+URL="{{ service_base_url }}"
+
+# POST one Slack outgoing-webhook form; print the response headers.
+# A fresh timestamp each call: the room drops repeats of one id.
+slack_post() {
+  curl -sS --max-time 15 -D - -o /dev/null \
+      -X POST \
+      -H "Authorization: Bearer ${UNITYSVC_API_KEY}" \
+      --data-urlencode "token=$1" \
+      --data-urlencode "team_id=T0001" \
+      --data-urlencode "team_domain=example" \
+      --data-urlencode "channel_id=C2147483705" \
+      --data-urlencode "channel_name=test" \
+      --data-urlencode "timestamp=$(date +%s).$RANDOM" \
+      --data-urlencode "user_id=U2147483697" \
+      --data-urlencode "user_name=$2" \
+      --data-urlencode "text=$3" \
+      "$URL" 2>/dev/null
+}
+status_of() { printf '%s' "$1" | awk 'NR==1 {print $2}'; }
+rule_of() { printf '%s' "$1" | tr -d '\r' | awk 'tolower($1)=="x-unitysvc-rule:" {print $2}'; }
+
+posted=$(slack_post "$TOKEN" "Steve" "connectivity probe")
+status=$(status_of "$posted")
+if [ -z "$status" ]; then
+  echo "connectivity failed: could not connect to $URL" >&2; exit 1
+fi
+if [ -n "$(rule_of "$posted")" ]; then
+  echo "connectivity failed: HTTP $status, the $(rule_of "$posted") rule dropped a person's message" >&2; exit 1
+fi
+case "$status" in
+  2??) echo "delivery ok (HTTP $status)" ;;
+  *)   echo "connectivity failed: HTTP $status from $URL" >&2; exit 1 ;;
+esac
+
+refused=$(slack_post "not-the-token" "Steve" "wrong token probe")
+if [ "$(status_of "$refused")" != "401" ] || [ "$(rule_of "$refused")" != "bad-token" ]; then
+  echo "connectivity failed: a wrong token got HTTP $(status_of "$refused"), not 401 from the bad-token rule" >&2; exit 1
+fi
+echo "wrong token refused (HTTP 401, bad-token rule)"
+
+echoed=$(slack_post "$TOKEN" "slackbot" "echo probe")
+if [ "$(status_of "$echoed")" != "204" ] || [ "$(rule_of "$echoed")" != "own-echo" ]; then
+  echo "connectivity failed: a slackbot post got HTTP $(status_of "$echoed"), not 204 from the own-echo rule" >&2; exit 1
+fi
+echo "connectivity ok (slackbot post answered 204 by the own-echo rule)"
+{% endif %}
