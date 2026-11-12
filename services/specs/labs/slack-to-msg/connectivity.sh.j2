@@ -4,11 +4,9 @@ set -o pipefail
 {% if local_testing %}
 echo "connectivity ok (gateway-native rooms://post, no upstream)"
 {% else %}
-# The test customer resolves SLACK_OUTGOING_TOKEN from seller.secrets.txt.
 TOKEN="${SLACK_OUTGOING_TOKEN:-demo-outgoing-token}"
 URL="{{ service_base_url }}"
 
-# POST one Slack outgoing-webhook form; print the response headers.
 # A fresh timestamp each call: the room drops repeats of one id.
 slack_post() {
   curl -sS --max-time 15 -D - -o /dev/null \
@@ -25,7 +23,7 @@ slack_post() {
       --data-urlencode "text=$3" \
       "$URL" 2>/dev/null
 }
-status_of() { printf '%s' "$1" | awk 'NR==1 {print $2}'; }
+status_of() { printf '%s' "$1" | awk '/^HTTP\// {s=$2} END {print s}'; }
 rule_of() { printf '%s' "$1" | tr -d '\r' | awk 'tolower($1)=="x-unitysvc-rule:" {print $2}'; }
 
 posted=$(slack_post "$TOKEN" "Steve" "connectivity probe")

@@ -31,7 +31,7 @@
           "respond": {
             "status": 401
           },
-          "when": "body.token ~= \"${ customer_secrets.SLACK_OUTGOING_TOKEN }\""
+          "when": "body.token == \"\" or body.token ~= \"${ customer_secrets.SLACK_OUTGOING_TOKEN }\""
         },
         {
           "name": "own-echo",
@@ -96,7 +96,7 @@
           "respond": {
             "status": 401
           },
-          "when": "body.token ~= \"${ customer_secrets.{{ params.token_secret }} }\""
+          "when": "body.token == \"\" or body.token ~= \"${ customer_secrets.{{ params.token_secret }} }\""
         },
         {
           "name": "own-echo",
